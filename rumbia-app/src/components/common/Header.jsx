@@ -81,6 +81,9 @@ const Header = () => {
               </>
             ) : (
               <>
+                <a href="#contacto" className="text-muted hover:text-primary transition-colors">
+                  Contacto
+                </a>
                 <a href="#beneficios" className="text-muted hover:text-primary transition-colors">
                   Beneficios
                 </a>
@@ -133,6 +136,9 @@ const Header = () => {
               </>
             ) : (
               <>
+                <a href="#contacto" onClick={() => setMobileMenuOpen(false)}>
+                  Contacto
+                </a>
                 <a href="#beneficios" onClick={() => setMobileMenuOpen(false)}>
                   Beneficios
                 </a>

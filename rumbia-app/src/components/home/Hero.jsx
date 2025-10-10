@@ -1,18 +1,20 @@
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../../context/AuthContext'
-import Button from '../common/Button'
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import Button from "../common/Button";
 
 const Hero = () => {
-  const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const handleReserve = () => {
     if (isAuthenticated) {
-      document.querySelector('#booking-section')?.scrollIntoView({ behavior: 'smooth' })
+      document
+        .querySelector("#booking-section")
+        ?.scrollIntoView({ behavior: "smooth" });
     } else {
-      navigate('/login')
+      navigate("/login");
     }
-  }
+  };
 
   return (
     <section className="container mx-auto px-4 py-16 lg:py-24">
@@ -20,32 +22,35 @@ const Hero = () => {
         {/* Copy */}
         <div className="space-y-6">
           <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
-            Orientación vocacional por{' '}
+            Orientación vocacional por{" "}
             <span className="bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
               videollamada
             </span>
           </h1>
-          
+
           <p className="text-lg text-muted leading-relaxed">
-            Estudiantes de educación superior guían a adolescentes y jóvenes (12–27 años) de Perú e internacional.
-            Aclara tus dudas y elige con seguridad tu camino.
+            Estudiantes de educación superior guían a adolescentes y jóvenes
+            (12–27 años) de Perú e internacional. Aclara tus dudas y elige con
+            seguridad tu camino.
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <Button onClick={handleReserve}>
-              Reservar sesión
-            </Button>
-            <Button 
+            <Button onClick={handleReserve}>Reservar sesión</Button>
+            <Button
               variant="ghost"
-              onClick={() => document.querySelector('#valor')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() =>
+                document
+                  .querySelector("#valor")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
             >
               Ver mapa de valor
             </Button>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            {['Perú', 'Freemium', 'Síncrono', 'Accesible'].map((tag) => (
-              <span 
+            {["Perú", "Freemium", "Síncrono", "Accesible"].map((tag) => (
+              <span
                 key={tag}
                 className="px-4 py-2 bg-light bg-opacity-20 text-primary rounded-full text-sm font-medium"
               >
@@ -69,15 +74,16 @@ const Hero = () => {
             <div className="p-6 space-y-4">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
                 <video
-                  className="w-full h-full object-cover"
-                  controls
                   autoPlay
-                  loop
                   muted
+                  loop
                   playsInline
-                  poster="/images/video-thumbnail.jpg"
+                  className="w-full h-full object-cover"
                 >
-                  <source src="/videos/Wong-Carry.mp4" type="video/mp4" />
+                  <source
+                    src="/videos/orientacion-vocacional.mp4"
+                    type="video/mp4"
+                  />
                   Tu navegador no soporta el elemento de video.
                 </video>
               </div>
@@ -110,7 +116,7 @@ const Hero = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;
