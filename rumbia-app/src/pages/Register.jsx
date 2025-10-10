@@ -5,10 +5,11 @@ import RegisterHero from '../components/register/RegisterHero';
 const Register = () => {
   const navigate = useNavigate();
 
-  const handleRegister = (formData) => {
-    console.log("Registro exitoso:", formData);
-    // Aquí iría tu lógica: API call, luego navigate("/home")
-    // navigate("/home");
+  const handleRegister = (e) => {
+    e.preventDefault();
+    // Aquí iría tu lógica de registro: API call
+    console.log("Registro exitoso");
+    navigate("/home");
   };
 
   return (
