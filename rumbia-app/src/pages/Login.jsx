@@ -1,21 +1,31 @@
-import { useNavigate } from 'react-router-dom';
-import LoginSidebar from '../components/login/LoginSidebar';
-import LoginHero from '../components/login/LoginHero';
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import Header from '../components/common/Header'
+import Footer from '../components/common/Footer'
+import LoginForm from '../components/auth/LoginForm'
 
 const Login = () => {
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    navigate("/home");
-  };
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/home')
+    }
+  }, [isAuthenticated, navigate])
 
   return (
-    <div className="flex min-h-screen">
-      <LoginSidebar onLogin={handleLogin} />
-      <LoginHero />
-    </div>
-  );
-};
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      
+      <main className="flex-grow flex items-center justify-center px-4 py-12">
+        <LoginForm />
+      </main>
 
-export default Login;
+      <Footer />
+    </div>
+  )
+}
+
+export default Login

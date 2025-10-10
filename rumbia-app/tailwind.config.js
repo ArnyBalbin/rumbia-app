@@ -15,9 +15,6 @@ export default {
         background: '#F7FAF9',
         textDark: '#0f172a',
         muted: '#495a6a',
-        'rumbia-dark': '#012E4A',
-        'rumbia-blue': '#036280',
-        'rumbia-blue-hover': '#024b62',
       },
       borderRadius: {
         'custom': '16px',
