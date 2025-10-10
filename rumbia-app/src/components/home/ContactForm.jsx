@@ -16,7 +16,6 @@ const ContactForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Aquí iría tu lógica de backend/API
     setTimeout(() => {
       setShowModal(true);
       setIsSubmitting(false);
