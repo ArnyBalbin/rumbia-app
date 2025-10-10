@@ -1,7 +1,22 @@
-export default function Register() {
+import { useNavigate } from 'react-router-dom';
+import RegisterSidebar from '../components/register/RegisterSidebar';
+import RegisterHero from '../components/register/RegisterHero';
+
+const Register = () => {
+  const navigate = useNavigate();
+
+  const handleRegister = (formData) => {
+    console.log("Registro exitoso:", formData);
+    // Aquí iría tu lógica: API call, luego navigate("/home")
+    // navigate("/home");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-primary">Register - En construcción</h1>
+    <div className="flex min-h-screen">
+      <RegisterSidebar onRegister={handleRegister} />
+      <RegisterHero />
     </div>
-  )
-}
+  );
+};
+
+export default Register;

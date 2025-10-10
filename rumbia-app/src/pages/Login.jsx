@@ -1,7 +1,21 @@
-export default function Login() {
+import { useNavigate } from 'react-router-dom';
+import LoginSidebar from '../components/login/LoginSidebar';
+import LoginHero from '../components/login/LoginHero';
+
+const Login = () => {
+  const navigate = useNavigate();
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    navigate("/home");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-primary">Login - En construcción</h1>
+    <div className="flex min-h-screen">
+      <LoginSidebar onLogin={handleLogin} />
+      <LoginHero />
     </div>
-  )
-}
+  );
+};
+
+export default Login;

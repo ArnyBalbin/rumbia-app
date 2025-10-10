@@ -4,9 +4,10 @@ import Hero from '../components/home/Hero'
 import MentorCarousel from '../components/home/MentorCarousel'
 import ValueMap from '../components/home/ValueMap'
 import Benefits from '../components/home/Benefits'
-import BookingForm from '../components/home/BookingForm'
+import ContactForm from '../components/home/ContactForm'
 import Testimonials from '../components/home/Testimonials'
 import Button from '../components/common/Button'
+import WhatsAppButton from '../components/common/WhatsAppButton'
 
 const Home = () => {
   const handleCTA = () => {
@@ -18,11 +19,11 @@ const Home = () => {
       <Header />
       
       <main className="flex-grow">
-        <Hero />
+        <Hero /> 
         <MentorCarousel />
         <ValueMap />
         <Benefits />
-        <BookingForm />
+        <ContactForm />
         <Testimonials />
         
         {/* CTA Final */}
@@ -42,6 +43,7 @@ const Home = () => {
       </main>
 
       <Footer />
+      <WhatsAppButton phoneNumber="+51986107594" />
     </div>
   )
 }
