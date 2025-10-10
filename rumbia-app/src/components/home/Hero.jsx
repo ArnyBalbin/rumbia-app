@@ -67,10 +67,21 @@ const Hero = () => {
 
             {/* Video body */}
             <div className="p-6 space-y-4">
-              <div className="aspect-video bg-gradient-to-br from-accent to-secondary rounded-lg flex items-center justify-center text-white text-xl font-bold">
-                Tu mentor
+              <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                <video
+                  className="w-full h-full object-cover"
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster="/images/video-thumbnail.jpg"
+                >
+                  <source src="/videos/Wong-Carry.mp4" type="video/mp4" />
+                  Tu navegador no soporta el elemento de video.
+                </video>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="bg-cream p-3 rounded-lg text-primary font-medium">
                   💡 Consejos reales
@@ -83,7 +94,6 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-
             {/* Toolbar */}
             <div className="bg-gray-100 p-4 flex justify-center gap-4">
               <button className="w-12 h-12 rounded-full bg-white hover:bg-gray-200 transition-colors flex items-center justify-center text-xl">
