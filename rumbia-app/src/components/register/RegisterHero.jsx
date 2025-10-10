@@ -4,11 +4,10 @@ const RegisterHero = () => {
       {/* Reemplaza con tu imagen */}
       <img 
         src="/images/university-hall.jpg" 
-        alt="Estudiantes universitarios" 
+        alt="Universidad" 
         className="w-full h-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-transparent"></div>
-      
+      <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
     </div>
   );
 };
