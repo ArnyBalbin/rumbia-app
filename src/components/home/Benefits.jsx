@@ -57,17 +57,15 @@ const Benefits = () => {
                 
                 {/* Content */}
                 <div className="relative z-10">
-                  {/* Icon with gradient background and highlight badge */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${benefit.color} transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
-                      <Icon className="w-8 h-8 text-white" strokeWidth={2} />
-                    </div>
-                    
-                    {/* Highlight badge centrado verticalmente */}
-                    <span className="px-3 py-1 bg-[#378BA4] bg-opacity-10 text-[#012E4A] rounded-full text-xxs font-semibold">
-                      {benefit.highlight}
-                    </span>
+                  {/* Icon with gradient background */}
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${benefit.color} mb-6 transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                    <Icon className="w-8 h-8 text-white" strokeWidth={2} />
                   </div>
+
+                  {/* Highlight badge */}
+                  <span className="inline-block px-3 py-1 bg-[#378BA4] bg-opacity-10 text-[#012E4A] rounded-full text-xs font-semibold mb-4">
+                    {benefit.highlight}
+                  </span>
 
                   {/* Title */}
                   <h3 className="text-2xl font-bold text-[#012E4A] mb-3 group-hover:text-[#036280] transition-colors">
@@ -80,7 +78,7 @@ const Benefits = () => {
                   </p>
 
                   {/* Arrow indicator */}
-                  <div className="flex items-center text-[#378BA4] font-semibold text-sm opacity-50 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 transition-all duration-300">
+                  <div className="flex items-center text-[#378BA4] font-semibold text-sm opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 transition-all duration-300">
                     <span className="mr-2">Conocer más</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
