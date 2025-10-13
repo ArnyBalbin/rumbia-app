@@ -88,7 +88,7 @@ const RegisterForm = () => {
 
   return (
     <div className="w-full max-w-md">
-      <div className="card">
+      <div className="card shadow-none">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-primary mb-2">Crea tu cuenta</h2>
           <p className="text-muted">Únete a la comunidad de Rumbía</p>
