@@ -1,52 +1,78 @@
 import { useRef, useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, User } from 'lucide-react'
+import { ChevronLeft, ChevronRight, User, Star, Calendar, Clock } from 'lucide-react'
 
 const MentorCard = ({ mentor }) => (
-  <div className="w-[300px] h-[420px] flex-shrink-0 bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
-    {/* Imagen de portada */}
-    <div className="h-48 w-full relative overflow-hidden bg-gray-200">
+  <div className="w-[320px] h-[440px] flex-shrink-0 bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col group border border-gray-100">
+    {/* Imagen de portada con overlay gradient */}
+    <div className="h-48 w-full relative overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300">
       <img 
         src={mentor.image}
         alt={mentor.title}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         onError={(e) => {
           e.target.style.display = 'none'
           e.target.nextSibling.style.display = 'flex'
         }}
       />
       <div 
-        className="w-full h-full items-center justify-center text-white text-4xl font-bold hidden"
+        className="w-full h-full items-center justify-center text-white text-5xl font-bold hidden"
         style={{ background: mentor.gradient }}
       >
         {mentor.title.charAt(0)}
       </div>
-      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold text-gray-900 shadow-md">
-        S/{mentor.price}
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      {/* Badge de precio mejorado */}
+      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#036280] to-[#378BA4] backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transform group-hover:scale-110 transition-transform">
+        <span className="text-sm font-bold text-white">S/{mentor.price}</span>
+      </div>
+
+      {/* Badge de categoría */}
+      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md">
+        <span className="text-xs font-bold text-[#012E4A]">{mentor.category}</span>
       </div>
     </div>
 
     {/* Contenido */}
-    <div className="p-5 flex-1 flex flex-col">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-medium text-[#012E4A] bg-[#378BA4]/10 px-2 py-1 rounded-full">
-          {mentor.category}
-        </span>
-        <span className="text-xs text-gray-400">•</span>
-        <span className="text-xs text-gray-500">Límite: {mentor.deadline}</span>
+    <div className="p-6 flex-1 flex flex-col">
+      {/* Info superior con iconos */}
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <Calendar size={14} className="text-[#378BA4]" />
+          <span>{mentor.date}</span>
+        </div>
+        <span className="text-xs text-gray-300">•</span>
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <Clock size={14} className="text-[#378BA4]" />
+          <span>Límite: {mentor.deadline}</span>
+        </div>
       </div>
       
-      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+      <h3 className="text-xl font-bold text-[#012E4A] mb-3 line-clamp-2 group-hover:text-[#036280] transition-colors leading-tight">
         {mentor.title}
       </h3>
       
-      <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">
+      <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3 leading-relaxed">
         {mentor.description}
       </p>
       
-      {/* Perfil del mentor */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#036280] to-[#378BA4] flex items-center justify-center overflow-hidden">
+      {/* Rating simulado */}
+      <div className="flex items-center gap-1 mb-4">
+        {[...Array(5)].map((_, i) => (
+          <Star 
+            key={i} 
+            size={14} 
+            className={i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+          />
+        ))}
+        <span className="text-xs text-gray-500 ml-1">(4.8)</span>
+      </div>
+      
+      {/* Perfil del mentor mejorado */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#036280] to-[#378BA4] flex items-center justify-center overflow-hidden ring-2 ring-[#378BA4]/20 group-hover:ring-[#378BA4]/40 transition-all">
             {mentor.avatar ? (
               <img 
                 src={mentor.avatar} 
@@ -54,13 +80,22 @@ const MentorCard = ({ mentor }) => (
                 className="w-full h-full object-cover"
               />
             ) : (
-              <User size={16} className="text-white" />
+              <User size={18} className="text-white" />
             )}
           </div>
-          <span className="text-sm text-gray-700 font-medium">{mentor.username}</span>
+          <div>
+            <span className="text-sm text-[#012E4A] font-semibold block">{mentor.username}</span>
+            <span className="text-xs text-gray-500">Mentor verificado</span>
+          </div>
         </div>
-        <span className="text-xs text-gray-400">{mentor.date}</span>
       </div>
+    </div>
+
+    {/* Botón de acción en hover */}
+    <div className="px-6 pb-6 opacity-50 group-hover:opacity-100 transition-opacity duration-300 -mt-2">
+      <button className="w-full py-3 bg-gradient-to-r from-[#036280] to-[#378BA4] text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/30 transition-all duration-300 transform hover:scale-105">
+        Inscribirme
+      </button>
     </div>
   </div>
 )
@@ -164,7 +199,7 @@ const MentorCarousel = () => {
 
   const scroll = (direction) => {
     if (scrollRef.current) {
-      const cardWidth = 316
+      const cardWidth = 336 // 320px + 16px gap
       const scrollAmount = direction === 'left' ? -cardWidth : cardWidth
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
     }
@@ -198,95 +233,113 @@ const MentorCarousel = () => {
   }, [])
 
   return (
-    <section className="container mx-auto px-4 py-16">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-          Charlas Recomendadas
-        </h2>
-        <div className="hidden md:flex gap-2">
+    <section className="bg-gradient-to-b from-gray-50 to-white py-20 px-24">
+      <div className="container mx-auto px-6 lg:px-8">
+        {/* Header mejorado */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+          <div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-[#012E4A] mb-2">
+              Charlas Recomendadas
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Conecta con mentores que ya están en la carrera que te interesa
+            </p>
+          </div>
+          
+          {/* Controles de navegación - Desktop */}
+          <div className="hidden md:flex gap-3">
+            <button
+              onClick={() => scroll('left')}
+              disabled={!canScrollLeft}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                canScrollLeft
+                  ? 'bg-gradient-to-r from-[#036280] to-[#378BA4] text-white hover:shadow-lg hover:shadow-[#378BA4]/30 hover:scale-110'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              aria-label="Anterior"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              disabled={!canScrollRight}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                canScrollRight
+                  ? 'bg-gradient-to-r from-[#036280] to-[#378BA4] text-white hover:shadow-lg hover:shadow-[#378BA4]/30 hover:scale-110'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              aria-label="Siguiente"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+        </div>
+
+        {/* Carousel Container */}
+        <div className="relative group">
+          {/* Left Arrow - Mobile con mejor posicionamiento */}
           <button
             onClick={() => scroll('left')}
-            disabled={!canScrollLeft}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+            className={` md:hidden absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl ${
               canScrollLeft
-                ? 'bg-[#012E4A] text-white hover:bg-[#036280] shadow-md'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-white/95 backdrop-blur-sm opacity-0 group-hover:opacity-100'
+                : 'hidden'
             }`}
             aria-label="Anterior"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft className="text-[#012E4A]" size={24} />
           </button>
+
+          {/* Carousel Track con mejor padding */}
+          <div
+            ref={scrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth cursor-grab active:cursor-grabbing select-none py-4 px-2"
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
+            {mentors.map((mentor) => (
+              <MentorCard key={mentor.id} mentor={mentor} />
+            ))}
+          </div>
+
+          {/* Right Arrow - Mobile con mejor posicionamiento */}
           <button
             onClick={() => scroll('right')}
-            disabled={!canScrollRight}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+            className={`md:hidden absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl ${
               canScrollRight
-                ? 'bg-[#012E4A] text-white hover:bg-[#036280] shadow-md'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-white/95 backdrop-blur-sm opacity-0 group-hover:opacity-100'
+                : 'hidden'
             }`}
             aria-label="Siguiente"
           >
-            <ChevronRight size={20} />
+            <ChevronRight className="text-[#012E4A]" size={24} />
+          </button>
+        </div>
+
+        {/* CTA al final */}
+        <div className="mt-12 text-center">
+          <button className="px-8 py-4 bg-gradient-to-r from-[#036280] to-[#378BA4] text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-[#378BA4]/30 transition-all duration-300 transform hover:scale-105">
+            Ver todas las charlas →
           </button>
         </div>
       </div>
 
-      <div className="relative group">
-        {/* Left Arrow - Mobile */}
-        <button
-          onClick={() => scroll('left')}
-          className={`md:hidden absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-            canScrollLeft
-              ? 'bg-white shadow-lg opacity-0 group-hover:opacity-100'
-              : 'hidden'
-          }`}
-          aria-label="Anterior"
-        >
-          <ChevronLeft className="text-[#012E4A]" size={20} />
-        </button>
-
-        {/* Carousel Track */}
-        <div
-          ref={scrollRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth cursor-grab active:cursor-grabbing select-none"
-          style={{ 
-            scrollbarWidth: 'none', 
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}
-        >
-          {mentors.map((mentor) => (
-            <MentorCard key={mentor.id} mentor={mentor} />
-          ))}
-        </div>
-
-        {/* Right Arrow - Mobile */}
-        <button
-          onClick={() => scroll('right')}
-          className={`md:hidden absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-            canScrollRight
-              ? 'bg-white shadow-lg opacity-0 group-hover:opacity-100'
-              : 'hidden'
-          }`}
-          aria-label="Siguiente"
-        >
-          <ChevronRight className="text-[#012E4A]" size={20} />
-        </button>
-
-        {/* Progress Indicator */}
-        <div className="flex justify-center gap-2 mt-6 md:hidden">
-          {mentors.map((_, index) => (
-            <div
-              key={index}
-              className="w-2 h-2 rounded-full bg-gray-300 transition-all duration-300"
-            />
-          ))}
-        </div>
-      </div>
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
   )
 }
