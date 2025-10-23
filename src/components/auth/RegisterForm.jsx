@@ -2,20 +2,22 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../../context/AuthContext'
 import Button from '../common/Button'
-import { Eye, EyeOff, Mail, Lock, User, Calendar } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { ENDPOINTS } from '../../../config/api'
 
 const RegisterForm = () => {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { register } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    username: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    birthdate: '',
-    role: 'student' // student o mentor
+    tipo: 'learner' // learner o mentor (como espera el backend)
   })
 
   const handleChange = (e) => {
@@ -26,65 +28,39 @@ const RegisterForm = () => {
     setError('')
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+ const handleSubmit = async (e) => {
+  e.preventDefault()
+  setLoading(true)
+  setError('')
 
-    // Validaciones
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden')
-      return
-    }
+  if (formData.password !== formData.confirmPassword) {
+    setError('Las contraseñas no coinciden')
+    setLoading(false)
+    return
+  }
 
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
-      return
-    }
+  if (formData.password.length < 6) {
+    setError('La contraseña debe tener al menos 6 caracteres')
+    setLoading(false)
+    return
+  }
 
-    // Verificar edad (12-27 años)
-    const birthDate = new Date(formData.birthdate)
-    const today = new Date()
-    let age = today.getFullYear() - birthDate.getFullYear()
-    const monthDiff = today.getMonth() - birthDate.getMonth()
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--
-    }
-
-    if (age < 12 || age > 27) {
-      setError('Debes tener entre 12 y 27 años para registrarte')
-      return
-    }
-
-    // Obtener usuarios existentes
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    
-    // Verificar si el email ya existe
-    if (users.some(u => u.email === formData.email)) {
-      setError('Este correo ya está registrado')
-      return
-    }
-
-    // Crear nuevo usuario
-    const newUser = {
-      id: Date.now().toString(),
-      username: formData.username,
+  try {
+    await register({
+      first_name: formData.first_name,
+      last_name: formData.last_name,
       email: formData.email,
       password: formData.password,
-      birthdate: formData.birthdate,
-      role: formData.role,
-      createdAt: new Date().toISOString(),
-      onboardingCompleted: false
-    }
-
-    // Guardar usuario
-    users.push(newUser)
-    localStorage.setItem('users', JSON.stringify(users))
-
-    // Login automático
-    login(newUser)
-    
-    // Redirigir a onboarding
+      tipo: formData.tipo
+    })
     navigate('/onboarding')
+  } catch (err) {
+    setError(err.message || 'Error al registrar. Intenta nuevamente.')
+  } finally {
+    setLoading(false)
   }
+}
+
 
   return (
     <div className="w-full max-w-md">
@@ -101,22 +77,44 @@ const RegisterForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Username */}
+          {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-textDark mb-2">
-              Nombre de usuario
+              Nombre
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={20} />
               <input
                 type="text"
-                name="username"
-                value={formData.username}
+                name="first_name"
+                value={formData.first_name}
                 onChange={handleChange}
-                placeholder="tunombre"
+                placeholder="Tu nombre"
                 required
-                minLength={3}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent"
+                minLength={2}
+                disabled={loading}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          {/* Last Name */}
+          <div>
+            <label className="block text-sm font-medium text-textDark mb-2">
+              Apellido
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={20} />
+              <input
+                type="text"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                placeholder="Tu apellido"
+                required
+                minLength={2}
+                disabled={loading}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -135,32 +133,13 @@ const RegisterForm = () => {
                 onChange={handleChange}
                 placeholder="tucorreo@ejemplo.com"
                 required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent"
+                disabled={loading}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
 
-          {/* Birthdate */}
-          <div>
-            <label className="block text-sm font-medium text-textDark mb-2">
-              Fecha de nacimiento
-            </label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={20} />
-              <input
-                type="date"
-                name="birthdate"
-                value={formData.birthdate}
-                onChange={handleChange}
-                required
-                max={new Date().toISOString().split('T')[0]}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-            <p className="text-xs text-muted mt-1">Debes tener entre 12 y 27 años</p>
-          </div>
-
-          {/* Role */}
+          {/* Tipo - Learner o Mentor */}
           <div>
             <label className="block text-sm font-medium text-textDark mb-2">
               ¿Cómo quieres usar Rumbía?
@@ -168,9 +147,10 @@ const RegisterForm = () => {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, role: 'student' })}
-                className={`p-4 border-2 rounded-custom transition-all ${
-                  formData.role === 'student'
+                onClick={() => setFormData({ ...formData, tipo: 'learner' })}
+                disabled={loading}
+                className={`p-4 border-2 rounded-custom transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                  formData.tipo === 'learner'
                     ? 'border-accent bg-accent bg-opacity-10'
                     : 'border-gray-300 hover:border-accent'
                 }`}
@@ -181,9 +161,10 @@ const RegisterForm = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, role: 'mentor' })}
-                className={`p-4 border-2 rounded-custom transition-all ${
-                  formData.role === 'mentor'
+                onClick={() => setFormData({ ...formData, tipo: 'mentor' })}
+                disabled={loading}
+                className={`p-4 border-2 rounded-custom transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                  formData.tipo === 'mentor'
                     ? 'border-accent bg-accent bg-opacity-10'
                     : 'border-gray-300 hover:border-accent'
                 }`}
@@ -210,12 +191,14 @@ const RegisterForm = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent"
+                disabled={loading}
+                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary"
+                disabled={loading}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -236,13 +219,14 @@ const RegisterForm = () => {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent"
+                disabled={loading}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
-            Crear cuenta
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
           </Button>
         </form>
 
