@@ -1,148 +1,290 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../../../context/AuthContext'
-import Button from '../common/Button'
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
-import { ENDPOINTS } from '../../../config/api'
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'
 
 const LoginForm = () => {
-  const navigate = useNavigate()
-  const { login } = useAuth()
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
-  })
+  });
+
+  useEffect(() => {
+    setIsVisible(true);
+    
+    const handleMouseMove = (e) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
-    })
-    setError('')
-  }
+    });
+    setError('');
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  const handleSubmit = () => {
+    setLoading(true);
+    setError('');
 
-    try {
-      const response = await fetch(ENDPOINTS.LOGIN, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include', // Importante para las cookies
-        body: JSON.stringify(formData)
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.detail || data.message || 'Credenciales incorrectas. Por favor, verifica tu email y contraseña.')
-        return
+    setTimeout(() => {
+      if (formData.email && formData.password) {
+        console.log('Login exitoso:', formData);
+        setLoading(false);
+      } else {
+        setError('Por favor completa todos los campos');
+        setLoading(false);
       }
-
-      // Backend devuelve cookies, no token en el body
-      login({ email: formData.email })
-      navigate('/home')
-    } catch (err) {
-      setError('Error al conectar con el servidor. Intenta nuevamente.')
-      console.error('Login error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+    }, 1500);
+  };
 
   return (
-    <div className="w-full max-w-md">
-      <div className="card shadow-none">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-primary mb-2">Bienvenido de vuelta</h2>
-          <p className="text-muted">Ingresa a tu cuenta para continuar</p>
-        </div>
+    <div className="w-full max-w-md p-4">
+      {/* Contenedor del formulario con efecto 3D */}
+      <div 
+        className={`relative transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+        style={{
+          transform: `perspective(1000px) rotateY(${mousePosition.x * 0.3}deg) rotateX(${-mousePosition.y * 0.3}deg)`,
+          transformStyle: 'preserve-3d'
+        }}
+      >
+        {/* Glow effect exterior */}
+        <div className="absolute -inset-4 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] rounded-3xl blur-2xl opacity-30 animate-pulse"></div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
+        {/* Card principal */}
+        <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+          {/* Barra superior decorativa */}
+          <div className="h-1.5 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] animate-gradient-x"></div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-textDark mb-2">
-              Correo electrónico
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={20} />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="tucorreo@ejemplo.com"
-                required
-                disabled={loading}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
+          <div className="p-8 md:p-10">
+            {/* Header con badge */}
+            <div className="text-center mb-8 space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#378BA4]/30 to-[#036280]/30 backdrop-blur-xl rounded-full border border-[#378BA4]/50 shadow-lg">
+                <Sparkles className="w-4 h-4 text-[#378BA4]" />
+                <span className="text-sm font-bold text-white">Plataforma Segura</span>
+              </div>
+
+              <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">
+                Bienvenido
+                <span className="block bg-gradient-to-r from-[#378BA4] via-white to-[#378BA4] bg-clip-text text-transparent animate-gradient-x">
+                  de vuelta
+                </span>
+              </h2>
+              <p className="text-gray-300 text-sm">Ingresa a tu cuenta para continuar tu viaje</p>
             </div>
-          </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-textDark mb-2">
-              Contraseña
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={20} />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-                disabled={loading}
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
+            {/* Error message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-xl animate-shake">
+                <p className="text-red-200 text-sm font-medium flex items-center gap-2">
+                  <span className="text-lg">⚠️</span>
+                  {error}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-white pl-1">
+                  Correo electrónico
+                </label>
+                <div className="group relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#378BA4]/20 to-[#036280]/20 rounded-xl blur-sm group-focus-within:blur-md transition-all"></div>
+                  <div className="relative flex items-center">
+                    <Mail className="absolute left-4 text-[#378BA4] group-focus-within:text-white transition-colors z-10" size={20} />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="tu@email.com"
+                      disabled={loading}
+                      className="relative w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#378BA4] focus:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-white pl-1">
+                  Contraseña
+                </label>
+                <div className="group relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#036280]/20 to-[#378BA4]/20 rounded-xl blur-sm group-focus-within:blur-md transition-all"></div>
+                  <div className="relative flex items-center">
+                    <Lock className="absolute left-4 text-[#378BA4] group-focus-within:text-white transition-colors z-10" size={20} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      disabled={loading}
+                      className="relative w-full pl-12 pr-14 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#378BA4] focus:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
+                      className="absolute right-4 text-[#378BA4] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors z-10 p-1"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Forgot Password */}
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => console.log('Forgot password')}
+                  className="text-sm text-[#378BA4] hover:text-white font-semibold transition-colors inline-flex items-center gap-1 group"
+                >
+                  ¿Olvidaste tu contraseña?
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+
+              {/* Submit Button */}
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={handleSubmit}
                 disabled={loading}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold text-lg rounded-xl shadow-2xl shadow-[#378BA4]/50 hover:shadow-[#378BA4]/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 overflow-hidden"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  {loading ? (
+                    <>
+                      <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Iniciando sesión...
+                    </>
+                  ) : (
+                    <>
+                      Iniciar Sesión
+                      <ArrowRight className="group-hover:translate-x-2 transition-transform" size={20} />
+                    </>
+                  )}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#036280] to-[#378BA4] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
               </button>
+
+              {/* Divider */}
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/20"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-transparent text-gray-300 font-medium">o continúa con</span>
+                </div>
+              </div>
+
+              {/* Social Login */}
+              <div className="grid grid-cols-1 gap-4">
+                {[
+                  { name: 'Google', icon: '🌍', gradient: 'from-red-500/20 to-orange-500/20' },
+                ].map((social) => (
+                  <button
+                    key={social.name}
+                    type="button"
+                    onClick={() => console.log(`Login with ${social.name}`)}
+                    className={`group relative p-4 bg-gradient-to-r ${social.gradient} backdrop-blur-xl border border-white/20 hover:border-[#378BA4] rounded-xl transition-all duration-300 transform hover:scale-105 overflow-hidden`}
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-2 text-white font-semibold text-sm">
+                      <span className="text-xl group-hover:scale-110 transition-transform">{social.icon}</span>
+                      {social.name}
+                    </span>
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Register Link */}
+            <div className="mt-8 text-center">
+              <p className="text-gray-300 text-sm">
+                ¿No tienes cuenta?{' '}
+                <button
+                  onClick={() => navigate('/register')}
+                  className="text-[#378BA4] hover:text-white font-bold inline-flex items-center gap-1 group transition-colors"
+                >
+                  Regístrate aquí
+                  <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                </button>
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
+                <span className="flex items-center gap-1">🔒 Conexión segura</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">🛡️ Datos protegidos</span>
+              </div>
             </div>
           </div>
-
-          {/* Forgot Password */}
-          <div className="text-right">
-            <Link to="/forgot-password" className="text-sm text-accent hover:text-secondary">
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-muted">
-            ¿No tienes cuenta?{' '}
-            <Link to="/register" className="text-accent hover:text-secondary font-semibold">
-              Regístrate aquí
-            </Link>
-          </p>
         </div>
-      </div>
-    </div>
-  )
-}
 
-export default LoginForm
+        {/* Partículas decorativas */}
+        <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#378BA4] rounded-full blur-md opacity-60 animate-float"></div>
+        <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#036280] rounded-full blur-md opacity-60 animate-float-reverse"></div>
+      </div>
+
+      <style>{`
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(-20px) translateX(10px); }
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        .animate-gradient-x {
+          animation: gradient-x 3s ease infinite;
+          background-size: 200% auto;
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-float-reverse {
+          animation: float 8s ease-in-out infinite reverse;
+        }
+
+        .animate-shake {
+          animation: shake 0.3s ease-in-out;
+        }
+
+        .border-3 {
+          border-width: 3px;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default LoginForm;

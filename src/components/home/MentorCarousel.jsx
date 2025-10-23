@@ -1,112 +1,170 @@
 import { useRef, useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, User, Star, Calendar, Clock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, User, Star, Calendar, Clock, Sparkles } from 'lucide-react'
+import { useNavigate } from "react-router-dom";
 
 const MentorCard = ({ mentor }) => (
-  <div className="w-[320px] h-[440px] flex-shrink-0 bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col group border border-gray-100">
-    {/* Imagen de portada con overlay gradient */}
-    <div className="h-48 w-full relative overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300">
-      <img 
-        src={mentor.image}
-        alt={mentor.title}
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        onError={(e) => {
-          e.target.style.display = 'none'
-          e.target.nextSibling.style.display = 'flex'
-        }}
-      />
-      <div 
-        className="w-full h-full items-center justify-center text-white text-5xl font-bold hidden"
-        style={{ background: mentor.gradient }}
-      >
-        {mentor.title.charAt(0)}
-      </div>
-      {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+  <div className="group w-[340px] h-[480px] flex-shrink-0 relative">
+    {/* Glow effect externo */}
+    <div className="absolute -inset-2 bg-gradient-to-r from-[#036280] to-[#378BA4] rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500"></div>
+    
+    <div className="relative w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-105 flex flex-col border border-white/20 group-hover:border-[#378BA4]/50"
+      style={{
+        boxShadow: '0 20px 60px -15px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)'
+      }}
+    >
+      {/* Efecto de brillo animado */}
+      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent z-10 pointer-events-none"></div>
       
-      {/* Badge de precio mejorado */}
-      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#036280] to-[#378BA4] backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transform group-hover:scale-110 transition-transform">
-        <span className="text-sm font-bold text-white">S/{mentor.price}</span>
-      </div>
-
-      {/* Badge de categoría */}
-      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md">
-        <span className="text-xs font-bold text-[#012E4A]">{mentor.category}</span>
-      </div>
-    </div>
-
-    {/* Contenido */}
-    <div className="p-6 flex-1 flex flex-col">
-      {/* Info superior con iconos */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <Calendar size={14} className="text-[#378BA4]" />
-          <span>{mentor.date}</span>
+      {/* Imagen de portada mejorada - MÁS GRANDE */}
+      <div className="h-56 w-full relative overflow-hidden bg-gradient-to-br from-gray-700 to-gray-900">
+        <img 
+          src={mentor.image}
+          alt={mentor.title}
+          className="w-full h-full object-cover group-hover:scale-125 group-hover:rotate-3 transition-all duration-700 ease-out"
+          onError={(e) => {
+            e.target.style.display = 'none'
+            e.target.nextSibling.style.display = 'flex'
+          }}
+        />
+        <div 
+          className="w-full h-full items-center justify-center text-white text-5xl font-bold hidden"
+          style={{ background: mentor.gradient }}
+        >
+          {mentor.title.charAt(0)}
         </div>
-        <span className="text-xs text-gray-300">•</span>
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <Clock size={14} className="text-[#378BA4]" />
-          <span>Límite: {mentor.deadline}</span>
-        </div>
-      </div>
-      
-      <h3 className="text-xl font-bold text-[#012E4A] mb-3 line-clamp-2 group-hover:text-[#036280] transition-colors leading-tight">
-        {mentor.title}
-      </h3>
-      
-      <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3 leading-relaxed">
-        {mentor.description}
-      </p>
-      
-      {/* Rating simulado */}
-      <div className="flex items-center gap-1 mb-4">
-        {[...Array(5)].map((_, i) => (
-          <Star 
-            key={i} 
-            size={14} 
-            className={i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
-          />
-        ))}
-        <span className="text-xs text-gray-500 ml-1">(4.8)</span>
-      </div>
-      
-      {/* Perfil del mentor mejorado */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#036280] to-[#378BA4] flex items-center justify-center overflow-hidden ring-2 ring-[#378BA4]/20 group-hover:ring-[#378BA4]/40 transition-all">
-            {mentor.avatar ? (
-              <img 
-                src={mentor.avatar} 
-                alt={mentor.username}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User size={18} className="text-white" />
-            )}
+        
+        {/* Overlay gradient dinámico */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#012E4A]/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+        
+        {/* Badge de precio 3D */}
+        <div className="absolute top-4 right-4 group/price">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#036280] to-[#378BA4] rounded-full blur-lg opacity-60 group-hover/price:opacity-100 transition-opacity"></div>
+          <div className="relative bg-gradient-to-r from-[#036280] to-[#378BA4] backdrop-blur-sm px-5 py-2.5 rounded-full shadow-2xl transform group-hover:scale-125 group-hover:rotate-6 transition-all duration-300 border border-white/30">
+            <span className="text-sm font-black text-white">S/{mentor.price}</span>
           </div>
-          <div>
-            <span className="text-sm text-[#012E4A] font-semibold block">{mentor.username}</span>
-            <span className="text-xs text-gray-500">Mentor verificado</span>
+        </div>
+
+        {/* Badge de categoría mejorado */}
+        <div className="absolute top-4 left-4 group/category">
+          <div className="relative bg-white/20 backdrop-blur-xl px-4 py-2 rounded-full shadow-lg group-hover/category:bg-gradient-to-r group-hover/category:from-[#036280] group-hover/category:to-[#378BA4] transition-all duration-300 border border-white/30 transform group-hover:scale-110">
+            <span className="text-xs font-bold text-white transition-colors">{mentor.category}</span>
+          </div>
+        </div>
+
+        {/* Sparkle badge - aparece en hover */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-0 group-hover:scale-100 pointer-events-none">
+          <div className="relative">
+            <div className="absolute inset-0 bg-[#378BA4] rounded-full blur-xl opacity-50 animate-pulse"></div>
+            <div className="relative bg-white/20 backdrop-blur-sm rounded-full p-4 shadow-2xl border border-white/30">
+              <Sparkles className="w-8 h-8 text-white animate-spin" style={{ animationDuration: '3s' }} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    {/* Botón de acción en hover */}
-    <div className="px-6 pb-6 opacity-50 group-hover:opacity-100 transition-opacity duration-300 -mt-2">
-      <button className="w-full py-3 bg-gradient-to-r from-[#036280] to-[#378BA4] text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/30 transition-all duration-300 transform hover:scale-105">
-        Inscribirme
-      </button>
+      {/* Contenido */}
+      <div className="p-6 flex-1 flex flex-col relative z-10">
+        {/* Info superior con iconos */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-1.5 text-xs text-gray-300 group-hover:text-[#378BA4] transition-colors">
+            <Calendar size={14} className="text-[#378BA4]" />
+            <span className="font-medium">{mentor.date}</span>
+          </div>
+          <span className="text-xs text-gray-500">•</span>
+          <div className="flex items-center gap-1.5 text-xs text-gray-300 group-hover:text-[#378BA4] transition-colors">
+            <Clock size={14} className="text-[#378BA4]" />
+            <span className="font-medium">Límite: {mentor.deadline}</span>
+          </div>
+        </div>
+        
+        <h3 className="text-xl font-black text-white mb-3 line-clamp-2 group-hover:text-[#378BA4] transition-colors leading-tight">
+          {mentor.title}
+        </h3>
+        
+        <p className="text-sm text-gray-300 mb-4 flex-1 line-clamp-3 leading-relaxed group-hover:text-gray-200 transition-colors">
+          {mentor.description}
+        </p>
+        
+        {/* Rating con animación escalonada */}
+        <div className="flex items-center gap-1 mb-4">
+          {[...Array(5)].map((_, i) => (
+            <Star 
+              key={i} 
+              size={15} 
+              className={`transition-all duration-300 ${
+                i < 4 
+                  ? "fill-yellow-400 text-yellow-400 group-hover:scale-125 group-hover:rotate-12" 
+                  : "text-gray-500 group-hover:text-gray-400"
+              }`}
+              style={{ transitionDelay: `${i * 50}ms` }}
+            />
+          ))}
+          <span className="text-xs text-gray-400 ml-2 font-semibold group-hover:text-[#378BA4] transition-colors">(4.8)</span>
+        </div>
+        
+        {/* Perfil del mentor con efectos */}
+        <div className="flex items-center justify-between pt-4 border-t border-white/10 group-hover:border-[#378BA4]/30 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#036280] to-[#378BA4] rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity"></div>
+              <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-[#036280] to-[#378BA4] flex items-center justify-center overflow-hidden ring-2 ring-[#378BA4]/30 group-hover:ring-4 group-hover:ring-[#378BA4]/60 transition-all duration-300 group-hover:scale-110 shadow-lg">
+                {mentor.avatar ? (
+                  <img 
+                    src={mentor.avatar} 
+                    alt={mentor.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User size={20} className="text-white" />
+                )}
+              </div>
+            </div>
+            <div>
+              <span className="text-sm text-white font-bold block group-hover:text-[#378BA4] transition-colors">{mentor.username}</span>
+              <span className="text-xs text-gray-400 font-medium group-hover:text-[#378BA4] transition-colors">Mentor verificado ✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Botón de acción mejorado */}
+      <div className="px-6 pb-6 opacity-70 group-hover:opacity-100 transition-opacity duration-300 -mt-2">
+        <button className="relative w-full py-3.5 bg-gradient-to-r from-[#036280] to-[#378BA4] text-white font-black rounded-xl transition-all duration-300 transform group-hover:scale-105 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-[#378BA4]/40">
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            Inscribirme
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </span>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#378BA4] to-[#036280] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"></div>
+        </button>
+      </div>
     </div>
   </div>
 )
 
 const MentorCarousel = () => {
   const scrollRef = useRef(null)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [isVisible, setIsVisible] = useState(false)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
+
+  useEffect(() => {
+    setIsVisible(true)
+    
+    const handleMouseMove = (e) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 10,
+        y: (e.clientY / window.innerHeight - 0.5) * 10
+      })
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
 
   const mentors = [
     {
@@ -199,7 +257,7 @@ const MentorCarousel = () => {
 
   const scroll = (direction) => {
     if (scrollRef.current) {
-      const cardWidth = 336 // 320px + 16px gap
+      const cardWidth = 360
       const scrollAmount = direction === 'left' ? -cardWidth : cardWidth
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
     }
@@ -233,15 +291,44 @@ const MentorCarousel = () => {
   }, [])
 
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white py-20 px-24">
-      <div className="container mx-auto px-6 lg:px-8">
-        {/* Header mejorado */}
+    <section className="relative bg-[#012E4A] py-20 px-4 lg:px-24 overflow-hidden">
+      {/* Fondo con malla 3D */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'linear-gradient(to right, #036280 1px, transparent 1px), linear-gradient(to bottom, #036280 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+          transform: `perspective(1000px) rotateX(60deg) translateZ(-100px) translate(${mousePosition.x}px, ${mousePosition.y}px)`,
+          transition: 'transform 0.1s ease-out'
+        }}></div>
+      </div>
+
+      {/* Orbes flotantes */}
+      <div className="absolute top-20 right-10 w-96 h-96 bg-[#378BA4] rounded-full blur-3xl opacity-20 animate-float"></div>
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#036280] rounded-full blur-3xl opacity-20" style={{
+        animation: 'float 8s ease-in-out infinite reverse'
+      }}></div>
+
+      <div className={`container mx-auto px-6 lg:px-8 relative z-10 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-4xl lg:text-5xl font-bold text-[#012E4A] mb-2">
-              Charlas Recomendadas
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#036280]/30 to-[#378BA4]/30 backdrop-blur-xl px-4 py-2 rounded-full border border-[#378BA4]/50 shadow-lg shadow-[#378BA4]/20 mb-4">
+              <span className="text-2xl animate-bounce">🎯</span>
+              <span className="text-sm font-bold text-white tracking-wide">Sesiones destacadas</span>
+            </div>
+
+            <h2 className="text-4xl lg:text-5xl font-black text-white mb-2" style={{
+              textShadow: '0 0 30px rgba(55, 139, 164, 0.5)'
+            }}>
+              Charlas 
+              <span className="block mt-1 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] bg-clip-text text-transparent animate-gradient-x" style={{
+                backgroundSize: '200% auto',
+                filter: 'drop-shadow(0 0 20px rgba(55, 139, 164, 0.6))'
+              }}>
+                Recomendadas
+              </span>
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-300 text-lg">
               Conecta con mentores que ya están en la carrera que te interesa
             </p>
           </div>
@@ -251,53 +338,45 @@ const MentorCarousel = () => {
             <button
               onClick={() => scroll('left')}
               disabled={!canScrollLeft}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+              className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
                 canScrollLeft
-                  ? 'bg-gradient-to-r from-[#036280] to-[#378BA4] text-white hover:shadow-lg hover:shadow-[#378BA4]/30 hover:scale-110'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-[#036280] to-[#378BA4] text-white hover:shadow-xl hover:shadow-[#378BA4]/40 hover:scale-110 group'
+                  : 'bg-white/10 text-gray-600 cursor-not-allowed'
               }`}
               aria-label="Anterior"
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={28} className="relative z-10" />
+              {canScrollLeft && (
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+              )}
             </button>
             <button
               onClick={() => scroll('right')}
               disabled={!canScrollRight}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+              className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
                 canScrollRight
-                  ? 'bg-gradient-to-r from-[#036280] to-[#378BA4] text-white hover:shadow-lg hover:shadow-[#378BA4]/30 hover:scale-110'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-[#036280] to-[#378BA4] text-white hover:shadow-xl hover:shadow-[#378BA4]/40 hover:scale-110 group'
+                  : 'bg-white/10 text-gray-600 cursor-not-allowed'
               }`}
               aria-label="Siguiente"
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={28} className="relative z-10" />
+              {canScrollRight && (
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+              )}
             </button>
           </div>
         </div>
 
         {/* Carousel Container */}
-        <div className="relative group">
-          {/* Left Arrow - Mobile con mejor posicionamiento */}
-          <button
-            onClick={() => scroll('left')}
-            className={` md:hidden absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl ${
-              canScrollLeft
-                ? 'bg-white/95 backdrop-blur-sm opacity-0 group-hover:opacity-100'
-                : 'hidden'
-            }`}
-            aria-label="Anterior"
-          >
-            <ChevronLeft className="text-[#012E4A]" size={24} />
-          </button>
-
-          {/* Carousel Track con mejor padding */}
+        <div className="relative group/carousel">
           <div
             ref={scrollRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth cursor-grab active:cursor-grabbing select-none py-4 px-2"
+            className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth cursor-grab active:cursor-grabbing select-none py-4 px-2"
             style={{ 
               scrollbarWidth: 'none', 
               msOverflowStyle: 'none',
@@ -308,25 +387,22 @@ const MentorCarousel = () => {
               <MentorCard key={mentor.id} mentor={mentor} />
             ))}
           </div>
-
-          {/* Right Arrow - Mobile con mejor posicionamiento */}
-          <button
-            onClick={() => scroll('right')}
-            className={`md:hidden absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl ${
-              canScrollRight
-                ? 'bg-white/95 backdrop-blur-sm opacity-0 group-hover:opacity-100'
-                : 'hidden'
-            }`}
-            aria-label="Siguiente"
-          >
-            <ChevronRight className="text-[#012E4A]" size={24} />
-          </button>
         </div>
 
-        {/* CTA al final */}
+        {/* CTA */}
         <div className="mt-12 text-center">
-          <button className="px-8 py-4 bg-gradient-to-r from-[#036280] to-[#378BA4] text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-[#378BA4]/30 transition-all duration-300 transform hover:scale-105">
-            Ver todas las charlas →
+          <button className="group relative px-10 py-5 bg-gradient-to-r from-[#036280] to-[#378BA4] text-white font-black text-lg rounded-2xl shadow-2xl shadow-[#378BA4]/40 hover:shadow-[#378BA4]/60 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 overflow-hidden"
+            style={{
+              boxShadow: '0 20px 60px -15px rgba(55, 139, 164, 0.5), inset 0 1px 0 rgba(255,255,255,0.1)'
+            }}
+          >
+            <span className="relative z-10 flex items-center gap-3">
+              <span className="text-xl group-hover:rotate-12 transition-transform">🎓</span>
+              Ver todas las charlas
+              <span className="group-hover:translate-x-2 transition-transform">→</span>
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#378BA4] to-[#036280] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
           </button>
         </div>
       </div>
@@ -338,6 +414,24 @@ const MentorCarousel = () => {
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(-30px) translateX(20px); }
+        }
+
+        .animate-gradient-x {
+          animation: gradient-x 3s ease infinite;
+        }
+
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
         }
       `}</style>
     </section>

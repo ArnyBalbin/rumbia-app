@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { ENDPOINTS } from '../config/api.js'
 
 const AuthContext = createContext()
 
@@ -14,27 +15,73 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Verificar si hay usuario guardado al montar
   useEffect(() => {
-    const storedUser = sessionStorage.getItem('currentUser')
+    const storedUser = localStorage.getItem('currentUser')
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
     setLoading(false)
   }, [])
 
-  const login = (userData) => {
-    setUser(userData)
-    sessionStorage.setItem('currentUser', JSON.stringify(userData))
+  // 🔹 Login con API
+  const login = async (credentials) => {
+    try {
+      const response = await fetch(ENDPOINTS.LOGIN, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // para manejar cookies
+        body: JSON.stringify(credentials)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || data.message || 'Error en login')
+      }
+
+      setUser(data)
+      localStorage.setItem('currentUser', JSON.stringify(data))
+      return data
+    } catch (error) {
+      console.error('Login error:', error)
+      throw error
+    }
+  }
+
+  // 🔹 Register con API
+  const register = async (userData) => {
+    try {
+      const response = await fetch(ENDPOINTS.REGISTER, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(userData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || data.message || 'Error en registro')
+      }
+
+      // Guardar el usuario en contexto
+      setUser(data)
+      localStorage.setItem('currentUser', JSON.stringify(data))
+      return data
+    } catch (error) {
+      console.error('Register error:', error)
+      throw error
+    }
   }
 
   const logout = () => {
     setUser(null)
-    sessionStorage.removeItem('currentUser')
-  }
-
-  const register = (userData) => {
-    setUser(userData)
-    sessionStorage.setItem('currentUser', JSON.stringify(userData))
+    localStorage.removeItem('currentUser')
   }
 
   const value = {
