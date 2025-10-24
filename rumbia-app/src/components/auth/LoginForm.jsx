@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Check, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
@@ -34,26 +35,87 @@ const LoginForm = () => {
       [e.target.name]: e.target.value
     });
     setError('');
+    setSuccessMessage('');
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setLoading(true);
     setError('');
+    setSuccessMessage('');
 
-    setTimeout(() => {
-      if (formData.email && formData.password) {
-        console.log('Login exitoso:', formData);
-        setLoading(false);
-      } else {
-        setError('Por favor completa todos los campos');
-        setLoading(false);
+    try {
+      if (!formData.email || !formData.password) {
+        throw new Error('Por favor completa todos los campos');
       }
-    }, 1500);
+
+      console.log('📤 Datos de login:', formData);
+
+      const loginResponse = await fetch('https://api-rumbia.onrender.com/api/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+       const loginData = await loginResponse.json();
+      console.log('📥 Respuesta del login:', loginData);
+
+      if (!loginResponse.ok) {
+        console.error('❌ Error en login:', loginData);
+        throw new Error(loginData.detail || loginData.message || 'Error al iniciar sesión');
+      }
+
+      const token = loginData.access;
+      
+      console.log('🔍 Estructura de loginData:', {
+        access: loginData.access,
+        refresh: loginData.refresh,
+        user_id: loginData.user_id,
+        email: loginData.email,
+        first_name: loginData.first_name,
+        last_name: loginData.last_name,
+        tipo: loginData.tipo
+      });
+
+      // Guardar token y datos del usuario correctamente
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('refreshToken', loginData.refresh);
+      
+      // Guardar datos completos del usuario
+      const userData = {
+        user_id: loginData.user_id,
+        id: loginData.user_id, // Alias para compatibilidad
+        email: loginData.email || formData.email,
+        first_name: loginData.first_name,
+        last_name: loginData.last_name,
+        name: `${loginData.first_name} ${loginData.last_name}`,
+        tipo: loginData.tipo
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      
+      console.log('✅ Login exitoso');
+      console.log('💾 Datos guardados en localStorage:', userData);
+      
+      setSuccessMessage('¡Bienvenido de vuelta!');
+      
+      // Redirigir después de 1.5 segundos
+      setTimeout(() => {
+        navigate('/HomeLogged');
+      }, 1500);
+      
+    } catch (err) {
+      console.error('❌ Error general:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="w-full max-w-md p-4">
-      {/* Contenedor del formulario con efecto 3D */}
       <div 
         className={`relative transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
         style={{
@@ -61,16 +123,12 @@ const LoginForm = () => {
           transformStyle: 'preserve-3d'
         }}
       >
-        {/* Glow effect exterior */}
         <div className="absolute -inset-4 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] rounded-3xl blur-2xl opacity-30 animate-pulse"></div>
 
-        {/* Card principal */}
         <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
-          {/* Barra superior decorativa */}
           <div className="h-1.5 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] animate-gradient-x"></div>
 
           <div className="p-8 md:p-10">
-            {/* Header con badge */}
             <div className="text-center mb-8 space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#378BA4]/30 to-[#036280]/30 backdrop-blur-xl rounded-full border border-[#378BA4]/50 shadow-lg">
                 <Sparkles className="w-4 h-4 text-[#378BA4]" />
@@ -86,18 +144,25 @@ const LoginForm = () => {
               <p className="text-gray-300 text-sm">Ingresa a tu cuenta para continuar tu viaje</p>
             </div>
 
-            {/* Error message */}
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-xl animate-shake">
                 <p className="text-red-200 text-sm font-medium flex items-center gap-2">
-                  <span className="text-lg">⚠️</span>
+                  <X className="w-5 h-5" />
                   {error}
                 </p>
               </div>
             )}
 
+            {successMessage && (
+              <div className="mb-6 p-4 bg-green-500/10 backdrop-blur-xl border border-green-500/30 rounded-xl animate-pulse">
+                <p className="text-green-200 text-sm font-medium flex items-center gap-2">
+                  <Check className="w-5 h-5" />
+                  {successMessage}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-6">
-              {/* Email Field */}
               <div className="space-y-2">
                 <label className="block text-sm font-bold text-white pl-1">
                   Correo electrónico
@@ -119,7 +184,6 @@ const LoginForm = () => {
                 </div>
               </div>
 
-              {/* Password Field */}
               <div className="space-y-2">
                 <label className="block text-sm font-bold text-white pl-1">
                   Contraseña
@@ -135,6 +199,11 @@ const LoginForm = () => {
                       onChange={handleChange}
                       placeholder="••••••••"
                       disabled={loading}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !loading) {
+                          handleSubmit();
+                        }
+                      }}
                       className="relative w-full pl-12 pr-14 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#378BA4] focus:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
                     />
                     <button
@@ -149,7 +218,6 @@ const LoginForm = () => {
                 </div>
               </div>
 
-              {/* Forgot Password */}
               <div className="text-right">
                 <button
                   type="button"
@@ -161,7 +229,6 @@ const LoginForm = () => {
                 </button>
               </div>
 
-              {/* Submit Button */}
               <button
                 onClick={handleSubmit}
                 disabled={loading}
@@ -183,39 +250,8 @@ const LoginForm = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-[#036280] to-[#378BA4] opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
               </button>
-
-              {/* Divider */}
-              <div className="relative my-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/20"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-transparent text-gray-300 font-medium">o continúa con</span>
-                </div>
-              </div>
-
-              {/* Social Login */}
-              <div className="grid grid-cols-1 gap-4">
-                {[
-                  { name: 'Google', icon: '🌍', gradient: 'from-red-500/20 to-orange-500/20' },
-                ].map((social) => (
-                  <button
-                    key={social.name}
-                    type="button"
-                    onClick={() => console.log(`Login with ${social.name}`)}
-                    className={`group relative p-4 bg-gradient-to-r ${social.gradient} backdrop-blur-xl border border-white/20 hover:border-[#378BA4] rounded-xl transition-all duration-300 transform hover:scale-105 overflow-hidden`}
-                  >
-                    <span className="relative z-10 flex items-center justify-center gap-2 text-white font-semibold text-sm">
-                      <span className="text-xl group-hover:scale-110 transition-transform">{social.icon}</span>
-                      {social.name}
-                    </span>
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  </button>
-                ))}
-              </div>
             </div>
 
-            {/* Register Link */}
             <div className="mt-8 text-center">
               <p className="text-gray-300 text-sm">
                 ¿No tienes cuenta?{' '}
@@ -229,18 +265,22 @@ const LoginForm = () => {
               </p>
             </div>
 
-            {/* Footer */}
             <div className="mt-8 pt-6 border-t border-white/10">
               <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
-                <span className="flex items-center gap-1">🔒 Conexión segura</span>
+                <span className="flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Conexión segura
+                </span>
                 <span>•</span>
-                <span className="flex items-center gap-1">🛡️ Datos protegidos</span>
+                <span className="flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  Datos protegidos
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Partículas decorativas */}
         <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#378BA4] rounded-full blur-md opacity-60 animate-float"></div>
         <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#036280] rounded-full blur-md opacity-60 animate-float-reverse"></div>
       </div>

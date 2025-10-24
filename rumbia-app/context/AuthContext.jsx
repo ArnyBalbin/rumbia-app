@@ -5,91 +5,119 @@ const AuthContext = createContext()
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
   return context
 }
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [accessToken, setAccessToken] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Verificar si hay usuario guardado al montar
+  // 🔹 Cargar usuario guardado al iniciar
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser')
-    if (storedUser) {
+    const storedToken = localStorage.getItem('accessToken')
+
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser))
+      setAccessToken(storedToken)
     }
     setLoading(false)
   }, [])
 
-  // 🔹 Login con API
+  // 🔹 Login
   const login = async (credentials) => {
     try {
       const response = await fetch(ENDPOINTS.LOGIN, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include', // para manejar cookies
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.detail || data.message || 'Error en login')
-      }
+      if (!response.ok) throw new Error(data.detail || data.message || 'Error en login')
 
-      setUser(data)
-      localStorage.setItem('currentUser', JSON.stringify(data))
-      return data
+      // Guardar tokens y usuario
+      setAccessToken(data.access)
+      localStorage.setItem('accessToken', data.access)
+
+      // Obtener info del usuario autenticado
+      const userInfoRes = await fetch(ENDPOINTS.GET_USER_INFO(data.user_id), {
+        headers: { Authorization: `Bearer ${data.access}` }
+      })
+      const userInfo = await userInfoRes.json()
+
+      setUser(userInfo)
+      localStorage.setItem('currentUser', JSON.stringify(userInfo))
+      return userInfo
     } catch (error) {
       console.error('Login error:', error)
       throw error
     }
   }
 
-  // 🔹 Register con API
+  // 🔹 Registro
   const register = async (userData) => {
     try {
       const response = await fetch(ENDPOINTS.REGISTER, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.detail || data.message || 'Error en registro')
-      }
+      if (!response.ok) throw new Error(data.detail || data.message || 'Error en registro')
 
-      // Guardar el usuario en contexto
-      setUser(data)
-      localStorage.setItem('currentUser', JSON.stringify(data))
-      return data
+      // Después de registrarse, puedes iniciar sesión automáticamente
+      return await login({
+        email: userData.email,
+        password: userData.password
+      })
     } catch (error) {
       console.error('Register error:', error)
       throw error
     }
   }
 
+  // 🔹 Refrescar token
+  const refreshAccessToken = async () => {
+    try {
+      const response = await fetch(ENDPOINTS.REFRESH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh: localStorage.getItem('refreshToken') })
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error('No se pudo refrescar el token')
+      localStorage.setItem('accessToken', data.access)
+      setAccessToken(data.access)
+      return data.access
+    } catch (error) {
+      console.error('Token refresh error:', error)
+      logout()
+    }
+  }
+
+  // 🔹 Logout
   const logout = () => {
     setUser(null)
+    setAccessToken(null)
     localStorage.removeItem('currentUser')
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
   }
 
   const value = {
     user,
     login,
-    logout,
     register,
+    logout,
+    refreshAccessToken,
     isAuthenticated: !!user,
+    accessToken,
     loading
   }
 
