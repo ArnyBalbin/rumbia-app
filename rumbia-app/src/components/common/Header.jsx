@@ -68,7 +68,7 @@ const Header = () => {
               <>
                 {/* Nav Links */}
                 {[
-                  { label: 'Inicio', icon: Home, href: '/home' },
+                  { label: 'Inicio', icon: Home, href: '/' },
                   { label: 'Descubrir', icon: Compass, href: '/discover' }
                 ].map((item) => (
                   <Link
@@ -213,7 +213,7 @@ const Header = () => {
                 {isAuthenticated ? (
                   <>
                     {[
-                      { label: 'Inicio', icon: Home, href: '/home' },
+                      { label: 'Inicio', icon: Home, href: '/' },
                       { label: 'Descubrir', icon: Compass, href: '/discover' },
                       { label: 'Mi perfil', icon: User, href: '/profile' }
                     ].map((item) => (

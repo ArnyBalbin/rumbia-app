@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import OnboardingSteps from '../components/auth/OnboardingSteps'
 
 const Onboarding = () => {
   const { user, isAuthenticated } = useAuth()

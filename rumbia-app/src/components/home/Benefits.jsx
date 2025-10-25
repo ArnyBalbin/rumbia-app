@@ -31,14 +31,6 @@ const Benefits = () => {
       emoji: '💬'
     },
     {
-      icon: BookOpen,
-      title: 'Recursos prácticos',
-      description: 'Guías, rutas y comparativas para decidir mejor.',
-      color: 'from-[#036280] to-[#378BA4]',
-      highlight: 'Todo en un lugar',
-      emoji: '📚'
-    },
-    {
       icon: Clock,
       title: 'Reserva en minutos',
       description: 'Agenda en línea y recordatorios automáticos.',

@@ -1,125 +1,189 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { ENDPOINTS } from '../config/api.js'
+import { createContext, useContext, useState, useEffect } from 'react';
+import { ENDPOINTS } from '../config/api';
 
-const AuthContext = createContext()
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within an AuthProvider')
-  return context
-}
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [accessToken, setAccessToken] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 🔹 Cargar usuario guardado al iniciar
   useEffect(() => {
-    const storedUser = localStorage.getItem('currentUser')
-    const storedToken = localStorage.getItem('accessToken')
+    checkAuth();
+  }, []);
 
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser))
-      setAccessToken(storedToken)
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const userData = localStorage.getItem('currentUser');
+
+      if (token && userData) {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+        
+        // Opcional: Verificar token con el backend
+        await verifyToken(token);
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      logout();
+    } finally {
+      setLoading(false);
     }
-    setLoading(false)
-  }, [])
+  };
 
-  // 🔹 Login
-  const login = async (credentials) => {
+  const verifyToken = async (token) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('currentUser'));
+      const userCode = userData?.user_code;
+
+      if (!userCode) return;
+
+      const response = await fetch(ENDPOINTS.GET_USER_INFO(userCode), {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Token inválido');
+      }
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      logout();
+    }
+  };
+
+  const login = async (email, password) => {
     try {
       const response = await fetch(ENDPOINTS.LOGIN, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      })
+        body: JSON.stringify({ email, password })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
-      if (!response.ok) throw new Error(data.detail || data.message || 'Error en login')
+      if (!response.ok) {
+        throw new Error(data.detail || data.message || 'Error al iniciar sesión');
+      }
 
-      // Guardar tokens y usuario
-      setAccessToken(data.access)
-      localStorage.setItem('accessToken', data.access)
+      // Guardar tokens
+      localStorage.setItem('accessToken', data.access);
+      localStorage.setItem('refreshToken', data.refresh);
 
-      // Obtener info del usuario autenticado
-      const userInfoRes = await fetch(ENDPOINTS.GET_USER_INFO(data.user_id), {
-        headers: { Authorization: `Bearer ${data.access}` }
-      })
-      const userInfo = await userInfoRes.json()
+      // Guardar datos del usuario con user_code
+      const userData = {
+        user_code: data.user_code, // Campo principal
+        email: data.email || email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+        tipo: data.tipo
+      };
 
-      setUser(userInfo)
-      localStorage.setItem('currentUser', JSON.stringify(userInfo))
-      return userInfo
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      return { success: true, data: userData };
     } catch (error) {
-      console.error('Login error:', error)
-      throw error
+      console.error('Error en login:', error);
+      return { success: false, error: error.message };
     }
-  }
+  };
 
-  // 🔹 Registro
-  const register = async (userData) => {
+  const register = async (formData) => {
     try {
       const response = await fetch(ENDPOINTS.REGISTER, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      })
+        body: JSON.stringify(formData)
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
-      if (!response.ok) throw new Error(data.detail || data.message || 'Error en registro')
+      if (!response.ok) {
+        throw new Error(data.detail || data.message || 'Error en el registro');
+      }
 
-      // Después de registrarse, puedes iniciar sesión automáticamente
-      return await login({
-        email: userData.email,
-        password: userData.password
-      })
+      // Auto-login después del registro
+      return await login(formData.email, formData.password);
     } catch (error) {
-      console.error('Register error:', error)
-      throw error
+      console.error('Error en registro:', error);
+      return { success: false, error: error.message };
     }
-  }
+  };
 
-  // 🔹 Refrescar token
-  const refreshAccessToken = async () => {
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser');
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const refreshToken = async () => {
     try {
+      const refresh = localStorage.getItem('refreshToken');
+      
+      if (!refresh) {
+        throw new Error('No refresh token');
+      }
+
       const response = await fetch(ENDPOINTS.REFRESH, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh: localStorage.getItem('refreshToken') })
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error('No se pudo refrescar el token')
-      localStorage.setItem('accessToken', data.access)
-      setAccessToken(data.access)
-      return data.access
-    } catch (error) {
-      console.error('Token refresh error:', error)
-      logout()
-    }
-  }
+        body: JSON.stringify({ refresh })
+      });
 
-  // 🔹 Logout
-  const logout = () => {
-    setUser(null)
-    setAccessToken(null)
-    localStorage.removeItem('currentUser')
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-  }
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh token');
+      }
+
+      localStorage.setItem('accessToken', data.access);
+      return data.access;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      logout();
+      return null;
+    }
+  };
+
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+  };
 
   const value = {
     user,
+    isAuthenticated,
+    loading,
     login,
     register,
     logout,
-    refreshAccessToken,
-    isAuthenticated: !!user,
-    accessToken,
-    loading
-  }
+    refreshToken,
+    updateUser,
+    checkAuth
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe ser usado dentro de AuthProvider');
+  }
+  return context;
+};
+
+export default AuthContext;
