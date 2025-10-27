@@ -36,7 +36,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo con efecto 3D mejorado */}
           <Link
-            to={isAuthenticated ? '/home' : '/'}
+            to={isAuthenticated ? '/' : '/'}
             className="group flex items-center gap-3 relative"
           >
             {/* Glow effect suave */}

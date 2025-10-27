@@ -127,7 +127,6 @@ const ContactForm = () => {
           <div className="text-center mb-16">
             {/* Badge animado */}
             <div className="inline-flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-[#036280]/30 to-[#378BA4]/30 backdrop-blur-xl rounded-full border border-[#378BA4]/50 shadow-lg shadow-[#378BA4]/20 mb-6">
-              <span className="text-2xl">📧</span>
               <span className="text-sm font-bold text-white tracking-wide">Estamos aquí para ti</span>
             </div>
 

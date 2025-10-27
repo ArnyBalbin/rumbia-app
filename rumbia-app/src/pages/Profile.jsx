@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ENDPOINTS } from '../../config/api';
+import Header from '../components/common/Header';
+import Footer from '../components/common/Footer';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileStats from '../components/profile/ProfileStats';
 import ProfileTabs from '../components/profile/ProfileTabs';
@@ -91,7 +93,7 @@ const Profile = () => {
 
   if (!userDetails) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0d2136] to-[#0a1929] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] flex items-center justify-center">
         <div className="text-center">
           <p className="text-white font-semibold mb-2">Error al cargar el perfil</p>
           <p className="text-gray-400 text-sm mb-4">
@@ -99,7 +101,7 @@ const Profile = () => {
           </p>
           <button 
             onClick={() => window.location.href = '/'}
-            className="mt-4 px-6 py-3 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl hover:scale-105 transition-transform"
+            className="mt-4 px-6 py-3 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#378BA4]/50 transition-all"
           >
             Volver al inicio
           </button>
@@ -126,7 +128,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0d2136] to-[#0a1929] relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div 
@@ -139,35 +141,56 @@ const Profile = () => {
         ></div>
       </div>
 
+      {/* Header */}
+      <div className="relative z-20">
+        <div className="bg-white/5 backdrop-blur-xl border-b border-white/10">
+          <Header />
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header */}
-        <div className={`mb-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <ProfileHeader 
-            userDetails={userDetails}
-            isEditing={isEditing}
-            onEditToggle={handleEditToggle}
-          />
-        </div>
-
-        {/* Stats (only for mentors) */}
-        {isMentor && userDetails.mentor_profile && (
-          <div className={`mb-8 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <ProfileStats mentorProfile={userDetails.mentor_profile} />
+      <main className="flex-grow relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Profile Header */}
+          <div className={`mb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <ProfileHeader 
+              userDetails={userDetails}
+              isEditing={isEditing}
+              onEditToggle={handleEditToggle}
+            />
           </div>
-        )}
 
-        {/* Tabs */}
-        <div className={`mb-6 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <ProfileTabs 
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
+          {/* Stats (only for mentors) */}
+          {isMentor && userDetails.mentor_profile && (
+            <div className={`mb-12 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              <ProfileStats mentorProfile={userDetails.mentor_profile} />
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div className={`mb-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#378BA4]/10 to-[#036280]/10 rounded-xl blur-lg"></div>
+              <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl rounded-xl border border-white/20 p-2">
+                <ProfileTabs 
+                  activeTab={activeTab}
+                  onTabChange={handleTabChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Content */}
+          <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {renderTabContent()}
+          </div>
         </div>
+      </main>
 
-        {/* Tab Content */}
-        <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          {renderTabContent()}
+      {/* Footer */}
+      <div className="relative z-20">
+        <div className="bg-white/5 backdrop-blur-xl border-t border-white/10">
+          <Footer />
         </div>
       </div>
 

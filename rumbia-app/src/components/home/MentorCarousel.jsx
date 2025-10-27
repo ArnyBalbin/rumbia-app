@@ -312,10 +312,6 @@ const MentorCarousel = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#036280]/30 to-[#378BA4]/30 backdrop-blur-xl px-4 py-2 rounded-full border border-[#378BA4]/50 shadow-lg shadow-[#378BA4]/20 mb-4">
-              <span className="text-2xl animate-bounce">🎯</span>
-              <span className="text-sm font-bold text-white tracking-wide">Sesiones destacadas</span>
-            </div>
 
             <h2 className="text-4xl lg:text-5xl font-black text-white mb-2" style={{
               textShadow: '0 0 30px rgba(55, 139, 164, 0.5)'
@@ -397,7 +393,6 @@ const MentorCarousel = () => {
             }}
           >
             <span className="relative z-10 flex items-center gap-3">
-              <span className="text-xl group-hover:rotate-12 transition-transform">🎓</span>
               Ver todas las charlas
               <span className="group-hover:translate-x-2 transition-transform">→</span>
             </span>
