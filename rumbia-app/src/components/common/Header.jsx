@@ -45,7 +45,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo - ahora con margen izquierdo para alinear con el contenido */}
           <Link
-            to={isAuthenticated ? "/home" : "/"}
+            to={isAuthenticated ? "/discover" : "/"}
             className="flex items-center ml-0 lg:ml-8"
           >
             <img
