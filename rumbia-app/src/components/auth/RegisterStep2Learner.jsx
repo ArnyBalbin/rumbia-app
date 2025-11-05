@@ -19,24 +19,10 @@ const RegisterStep2Learner = ({
     { value: 'graduado_superior', label: 'Graduado Superior' }
   ];
 
-  const careerOptions = [
-    'Ingeniería de Sistemas', 'Medicina', 'Derecho', 'Administración',
-    'Psicología', 'Arquitectura', 'Contabilidad', 'Enfermería',
-    'Marketing', 'Diseño Gráfico', 'Educación', 'Gastronomía'
-  ];
-
   const scheduleOptions = [
     { value: 'dia', label: 'Día', icon: Clock, desc: 'Mañana y tarde' },
     { value: 'noche', label: 'Noche', icon: Star, desc: 'Tarde y noche' }
   ];
-
-  const toggleInterest = (interest) => {
-    const newInterests = learnerData.interests.includes(interest)
-      ? learnerData.interests.filter(i => i !== interest)
-      : [...learnerData.interests, interest];
-    
-    onChange({ target: { name: 'interests', value: newInterests } });
-  };
 
   return (
     <div className="space-y-6">
@@ -102,40 +88,6 @@ const RegisterStep2Learner = ({
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Interests */}
-      <div className="space-y-3">
-        <label className="block text-sm font-bold text-white pl-1">
-          Carreras que te interesan (selecciona varias)
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto p-2 bg-black/20 rounded-xl">
-          {careerOptions.map((career) => (
-            <button
-              key={career}
-              type="button"
-              onClick={() => toggleInterest(career)}
-              disabled={loading}
-              className={`group relative p-3 bg-white/10 backdrop-blur-xl rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
-                learnerData.interests.includes(career)
-                  ? 'border-2 border-white shadow-lg shadow-white/30'
-                  : 'border-2 border-white/20 hover:border-white/50'
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium text-white text-sm">{career}</span>
-                {learnerData.interests.includes(career) && (
-                  <Check className="w-4 h-4 text-white flex-shrink-0" />
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-        {learnerData.interests.length > 0 && (
-          <div className="text-xs text-gray-300 pl-1">
-            {learnerData.interests.length} carrera{learnerData.interests.length !== 1 ? 's' : ''} seleccionada{learnerData.interests.length !== 1 ? 's' : ''}
-          </div>
-        )}
       </div>
 
       {/* Schedule Preference */}

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Header from '../components/common/Header'
@@ -8,12 +8,13 @@ import RegisterForm from '../components/auth/RegisterForm'
 const Register = () => {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const [canShowForm, setCanShowForm] = useState(true)
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home')
+      navigate('/profile')
     }
-  }, [isAuthenticated, navigate])
+  }, []) 
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] relative overflow-hidden">
@@ -35,7 +36,7 @@ const Register = () => {
 
       {/* Main con el formulario */}
       <main className="flex-grow flex items-center justify-center relative z-10 px-4 py-12">
-        <RegisterForm />
+        {canShowForm && <RegisterForm />}
       </main>
 
       {/* Footer con glassmorphism */}

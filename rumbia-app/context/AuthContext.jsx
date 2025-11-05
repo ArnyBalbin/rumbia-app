@@ -109,12 +109,22 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.detail || data.message || 'Error en el registro');
       }
 
-      // Auto-login después del registro
-      return await login(formData.email, formData.password);
+      // Solo registrar sin hacer login automático - el usuario lo hará después del modal
+      // Guardamos el email/password temporalmente para el login automático después
+      return { 
+        success: true, 
+        email: formData.email, 
+        password: formData.password,
+        data: data 
+      };
     } catch (error) {
       console.error('Error en registro:', error);
       return { success: false, error: error.message };
     }
+  };
+
+  const loginAfterRegister = async (email, password) => {
+    return await login(email, password);
   };
 
   const logout = () => {
@@ -159,15 +169,53 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('currentUser', JSON.stringify(userData));
   };
 
+  const updateUserProfile = async (profileData) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const userData = JSON.parse(localStorage.getItem('currentUser'));
+      const userCode = userData?.user_code;
+
+      if (!userCode || !token) {
+        throw new Error('No autorizado');
+      }
+
+      const response = await fetch(ENDPOINTS.UPDATE_USER_PROFILE(userCode), {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(profileData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar perfil');
+      }
+
+      const updatedData = await response.json();
+      
+      // Actualizar el usuario en el contexto
+      const newUserData = { ...userData, ...profileData };
+      updateUser(newUserData);
+
+      return { success: true, data: updatedData };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     user,
     isAuthenticated,
     loading,
     login,
     register,
+    loginAfterRegister,
     logout,
     refreshToken,
     updateUser,
+    updateUserProfile,
     checkAuth
   };
 
