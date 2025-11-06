@@ -1,77 +1,149 @@
-import { Award, Check } from 'lucide-react';
+import { Award, Lock } from 'lucide-react';
 
 const ProfileAchievements = ({ userDetails }) => {
-  const isMentor = userDetails.tipo === 'mentor';
-
   const achievements = [
-    { 
-      title: 'Primer Paso', 
-      desc: 'Completaste tu perfil', 
-      color: 'from-yellow-400 to-yellow-600', 
-      unlocked: true 
+    {
+      id: 1,
+      title: 'Primera Sesión',
+      description: 'Completaste tu primera sesión',
+      icon: '🎯',
+      unlocked: true,
+      date: '15 Oct 2024'
     },
-    { 
-      title: 'Dedicado', 
-      desc: '10 horas de mentoría', 
-      color: 'from-blue-400 to-blue-600', 
-      unlocked: isMentor 
+    {
+      id: 2,
+      title: 'Estudiante Activo',
+      description: '5 sesiones completadas',
+      icon: '⚡',
+      unlocked: true,
+      date: '20 Oct 2024'
     },
-    { 
-      title: 'Estrella Brillante', 
-      desc: 'Calificación 5 estrellas', 
-      color: 'from-purple-400 to-purple-600', 
-      unlocked: false 
+    {
+      id: 3,
+      title: 'Explorador',
+      description: 'Probaste 3 materias diferentes',
+      icon: '🗺️',
+      unlocked: true,
+      date: '25 Oct 2024'
     },
-    { 
-      title: 'Perseverante', 
-      desc: '5 sesiones completadas', 
-      color: 'from-green-400 to-green-600', 
-      unlocked: false 
+    {
+      id: 4,
+      title: 'Dedicación',
+      description: '10 sesiones completadas',
+      icon: '🔥',
+      unlocked: false,
+      progress: '7/10'
     },
-    { 
-      title: 'Mentor Popular', 
-      desc: '20 estudiantes', 
-      color: 'from-orange-400 to-orange-600', 
-      unlocked: false 
+    {
+      id: 5,
+      title: 'Maestro',
+      description: 'Alcanza calificación perfecta 5 veces',
+      icon: '🏆',
+      unlocked: false,
+      progress: '2/5'
     },
-    { 
-      title: 'Experto', 
-      desc: '100 horas de mentoría', 
-      color: 'from-red-400 to-red-600', 
-      unlocked: false 
+    {
+      id: 6,
+      title: 'Colaborador',
+      description: 'Ayuda a 3 compañeros',
+      icon: '🤝',
+      unlocked: false,
+      progress: '0/3'
     }
   ];
 
   return (
-    <div className="relative">
-      <div className="absolute -inset-1 bg-gradient-to-r from-[#378BA4]/10 to-[#036280]/10 rounded-2xl blur-lg"></div>
-      <div className="relative bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/20 p-6">
-        <h3 className="text-xl font-black text-white mb-4 flex items-center gap-2">
-          <Award className="text-[#378BA4]" size={24} />
-          Mis Logros
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {achievements.map((achievement, idx) => (
-            <div key={idx} className={`group relative ${!achievement.unlocked && 'opacity-50'}`}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#378BA4]/20 to-[#036280]/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-all"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all text-center">
-                <div className={`inline-flex w-16 h-16 bg-gradient-to-br ${achievement.color} rounded-full items-center justify-center mb-3 shadow-lg`}>
-                  <Award className="text-white" size={32} />
-                </div>
-                <h4 className="text-white font-bold mb-1">{achievement.title}</h4>
-                <p className="text-gray-400 text-sm">{achievement.desc}</p>
-                {achievement.unlocked && (
-                  <div className="mt-2">
-                    <span className="text-xs text-green-400 flex items-center justify-center gap-1">
-                      <Check size={14} />
-                      Desbloqueado
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-2xl font-bold text-white mb-2">Logros</h3>
+        <p className="text-gray-400">
+          Tus insignias y reconocimientos ganados
+        </p>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg p-4 text-center">
+          <div className="text-3xl font-bold text-white mb-1">
+            {achievements.filter(a => a.unlocked).length}
+          </div>
+          <div className="text-xs text-gray-400">Desbloqueados</div>
         </div>
+        <div className="bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg p-4 text-center">
+          <div className="text-3xl font-bold text-white mb-1">
+            {achievements.length}
+          </div>
+          <div className="text-xs text-gray-400">Total</div>
+        </div>
+        <div className="bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg p-4 text-center">
+          <div className="text-3xl font-bold text-[#378BA4] mb-1">
+            {Math.round((achievements.filter(a => a.unlocked).length / achievements.length) * 100)}%
+          </div>
+          <div className="text-xs text-gray-400">Completado</div>
+        </div>
+        <div className="bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg p-4 text-center">
+          <div className="text-3xl font-bold text-white mb-1">
+            {achievements.filter(a => !a.unlocked).length}
+          </div>
+          <div className="text-xs text-gray-400">Por desbloquear</div>
+        </div>
+      </div>
+
+      {/* Achievements Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {achievements.map((achievement) => (
+          <div 
+            key={achievement.id}
+            className={`relative bg-[#036280]/20 border rounded-lg p-5 transition-all ${
+              achievement.unlocked 
+                ? 'border-[#378BA4]/50 hover:border-[#378BA4] hover:bg-[#036280]/30' 
+                : 'border-[#378BA4]/20 opacity-60'
+            }`}
+          >
+            {/* Badge Icon */}
+            <div className={`text-4xl mb-3 ${achievement.unlocked ? '' : 'grayscale opacity-50'}`}>
+              {achievement.unlocked ? achievement.icon : '🔒'}
+            </div>
+
+            {/* Title and Description */}
+            <h4 className={`font-semibold mb-1 ${achievement.unlocked ? 'text-white' : 'text-gray-500'}`}>
+              {achievement.title}
+            </h4>
+            <p className="text-xs text-gray-400 mb-3">
+              {achievement.description}
+            </p>
+
+            {/* Date or Progress */}
+            {achievement.unlocked ? (
+              <div className="flex items-center gap-1 text-xs text-[#378BA4]">
+                <Award className="w-3 h-3" />
+                <span>Desbloqueado {achievement.date}</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500">Progreso</span>
+                  <span className="text-gray-400 font-medium">{achievement.progress}</span>
+                </div>
+                <div className="w-full bg-[#012E4A] rounded-full h-1.5">
+                  <div 
+                    className="bg-[#378BA4]/50 h-1.5 rounded-full transition-all duration-500" 
+                    style={{ 
+                      width: `${(parseInt(achievement.progress.split('/')[0]) / parseInt(achievement.progress.split('/')[1])) * 100}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            {/* Locked Overlay */}
+            {!achievement.unlocked && (
+              <div className="absolute top-2 right-2">
+                <Lock className="w-4 h-4 text-gray-600" />
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import MentorCarousel from '../components/home/MentorCarousel'
 import Benefits from '../components/home/Benefits'
 import ContactForm from '../components/home/ContactForm'
 import WhatsAppButton from '../components/common/WhatsAppButton'
-import StepsTimeline from '../components/home/StepsTimeline'
+import StepsTimeline from '../components/home/About'
 
 const Home = () => {
   const handleCTA = () => {

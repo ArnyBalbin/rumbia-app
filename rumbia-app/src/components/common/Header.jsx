@@ -8,8 +8,9 @@ import {
   Compass,
   Sparkles,
   ChevronDown,
+  Settings,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 
 const Header = () => {
@@ -18,6 +19,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,6 +35,25 @@ const Header = () => {
     navigate("/");
   };
 
+  // Función para manejar la navegación a secciones
+  const handleSectionNav = (e, sectionId) => {
+    e.preventDefault();
+
+    // Si no estamos en la página principal, navegar primero
+    if (location.pathname !== "/") {
+      navigate("/");
+      // Esperar a que la navegación complete antes de hacer scroll
+      setTimeout(() => {
+        const element = document.querySelector(sectionId);
+        element?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    } else {
+      // Si ya estamos en la página principal, hacer scroll directo
+      const element = document.querySelector(sectionId);
+      element?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <header
       className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -43,7 +64,7 @@ const Header = () => {
     >
       <div className="container mx-auto px-4 lg:px-6">
         <div className="flex items-center justify-between h-20">
-          {/* Logo - ahora con margen izquierdo para alinear con el contenido */}
+          {/* Logo */}
           <Link
             to={isAuthenticated ? "/discover" : "/"}
             className="flex items-center ml-0 lg:ml-8"
@@ -155,15 +176,16 @@ const Header = () => {
               </>
             ) : (
               <>
-                {/* Public Nav Links */}
+                {/* Public Nav Links con navegación corregida */}
                 {[
                   { label: "Contacto", href: "#contacto" },
                   { label: "Beneficios", href: "#beneficios" },
-                  { label: "Mapa de valor", href: "#lineadetiempo" },
+                  { label: "Acerca de", href: "#lineadetiempo" },
                 ].map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
+                    onClick={(e) => handleSectionNav(e, item.href)}
                     className="group relative px-5 py-2.5 text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300"
                   >
                     {item.label}
@@ -209,10 +231,30 @@ const Header = () => {
               <nav className="relative bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/20 p-4 space-y-2">
                 {isAuthenticated ? (
                   <>
+                    {/* User info en mobile */}
+                    <div className="px-4 py-3 mb-2 bg-gradient-to-br from-white/10 to-transparent rounded-xl border border-white/20">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-[#378BA4] via-[#51C4D3] to-[#036280] rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/30">
+                          <span className="text-lg">
+                            {user?.username?.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-bold text-sm truncate">
+                            {user?.username}
+                          </p>
+                          <p className="text-white/60 text-xs">
+                            {user?.email || 'usuario@rumbia.com'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     {[
                       { label: "Inicio", icon: Home, href: "/" },
                       { label: "Descubrir", icon: Compass, href: "/discover" },
                       { label: "Mi perfil", icon: User, href: "/profile" },
+                      { label: "Configuración", icon: Settings, href: "/settings" },
                     ].map((item) => (
                       <Link
                         key={item.label}
@@ -227,7 +269,7 @@ const Header = () => {
                       </Link>
                     ))}
 
-                    <div className="my-2 h-px bg-white/20"></div>
+                    <div className="my-2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
                     <button
                       onClick={() => {
@@ -247,13 +289,15 @@ const Header = () => {
                     {[
                       { label: "Contacto", href: "#contacto" },
                       { label: "Beneficios", href: "#beneficios" },
-                      { label: "Mapa de valor", href: "#valor" },
-                      { label: "Comunidad", href: "#comunidad" },
+                      { label: "Acerca de", href: "#lineadetiempo" },
                     ].map((item) => (
                       <a
                         key={item.label}
                         href={item.href}
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={(e) => {
+                          handleSectionNav(e, item.href);
+                          setMobileMenuOpen(false);
+                        }}
                         className="block px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-300 text-white font-semibold"
                       >
                         {item.label}
