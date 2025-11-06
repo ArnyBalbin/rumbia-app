@@ -12,11 +12,13 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { ENDPOINTS } from '../../../config/api';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,28 +32,77 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Fetch profile picture cuando el usuario esté autenticado
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (!isAuthenticated || !user?.user_code) return;
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(ENDPOINTS.GET_USER_INFO(user.user_code), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setProfilePicture(userData.profile_picture);
+        }
+      } catch (error) {
+        console.error('Error al obtener foto de perfil:', error);
+      }
+    };
+
+    fetchProfilePicture();
+  }, [isAuthenticated, user]);
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // Función para manejar la navegación a secciones
   const handleSectionNav = (e, sectionId) => {
     e.preventDefault();
 
-    // Si no estamos en la página principal, navegar primero
     if (location.pathname !== "/") {
       navigate("/");
-      // Esperar a que la navegación complete antes de hacer scroll
       setTimeout(() => {
         const element = document.querySelector(sectionId);
         element?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     } else {
-      // Si ya estamos en la página principal, hacer scroll directo
       const element = document.querySelector(sectionId);
       element?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
+
+  // Componente para el avatar del usuario
+  const UserAvatar = ({ size = "default" }) => {
+    const sizeClasses = {
+      default: "w-9 h-9",
+      large: "w-12 h-12"
+    };
+
+    return (
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#378BA4] to-[#036280] rounded-full blur-sm opacity-50"></div>
+        <div className={`relative ${sizeClasses[size]} bg-gradient-to-br from-[#378BA4] to-[#036280] rounded-full flex items-center justify-center text-white font-bold shadow-lg overflow-hidden`}>
+          {profilePicture ? (
+            <img 
+              src={profilePicture} 
+              alt="Profile" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className={size === "large" ? "text-lg" : ""}>
+              {user?.username?.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -102,13 +153,7 @@ const Header = () => {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="group flex items-center gap-3 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 backdrop-blur-xl border border-white/20 hover:border-[#378BA4]/50 transition-all duration-300"
                   >
-                    {/* Avatar con gradiente */}
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#378BA4] to-[#036280] rounded-full blur-sm opacity-50"></div>
-                      <div className="relative w-9 h-9 bg-gradient-to-br from-[#378BA4] to-[#036280] rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-                        {user?.username?.charAt(0).toUpperCase()}
-                      </div>
-                    </div>
+                    <UserAvatar />
 
                     <span className="font-semibold text-white text-sm max-w-[100px] truncate">
                       {user?.username}
@@ -124,7 +169,6 @@ const Header = () => {
                   {/* Dropdown Menu */}
                   {userMenuOpen && (
                     <>
-                      {/* Backdrop para cerrar */}
                       <div
                         className="fixed inset-0 z-40"
                         onClick={() => setUserMenuOpen(false)}
@@ -132,7 +176,6 @@ const Header = () => {
 
                       <div className="absolute right-0 mt-3 w-56 z-50 animate-slideDown">
                         <div className="relative">
-                          {/* Glow effect */}
                           <div className="absolute -inset-1 bg-gradient-to-r from-[#378BA4] to-[#036280] rounded-2xl blur-lg opacity-30"></div>
 
                           <div className="relative bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
@@ -176,7 +219,6 @@ const Header = () => {
               </>
             ) : (
               <>
-                {/* Public Nav Links con navegación corregida */}
                 {[
                   { label: "Contacto", href: "#contacto" },
                   { label: "Beneficios", href: "#beneficios" },
@@ -193,7 +235,6 @@ const Header = () => {
                   </a>
                 ))}
 
-                {/* Login Button */}
                 <Link to="/login">
                   <button className="group relative px-6 py-3 ml-2 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl shadow-lg shadow-[#378BA4]/30 hover:shadow-[#378BA4]/50 transition-all duration-300 transform hover:scale-105 overflow-hidden">
                     <span className="relative z-10 flex items-center gap-2">
@@ -225,7 +266,6 @@ const Header = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden pb-6 pt-4 animate-slideDown">
             <div className="relative">
-              {/* Glow effect */}
               <div className="absolute -inset-2 bg-gradient-to-r from-[#378BA4] to-[#036280] rounded-2xl blur-lg opacity-20"></div>
 
               <nav className="relative bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/20 p-4 space-y-2">
@@ -234,11 +274,7 @@ const Header = () => {
                     {/* User info en mobile */}
                     <div className="px-4 py-3 mb-2 bg-gradient-to-br from-white/10 to-transparent rounded-xl border border-white/20">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#378BA4] via-[#51C4D3] to-[#036280] rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/30">
-                          <span className="text-lg">
-                            {user?.username?.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
+                        <UserAvatar size="large" />
                         <div className="flex-1 min-w-0">
                           <p className="text-white font-bold text-sm truncate">
                             {user?.username}
