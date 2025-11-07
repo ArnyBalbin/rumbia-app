@@ -1,14 +1,26 @@
 import { useState, useEffect } from "react";
-import { X, Save } from "lucide-react";
+import { X, Save, Plus } from "lucide-react";
 
 const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
+  // Función helper para parsear intereses
+  const parseInterests = (interestsString) => {
+    if (!interestsString) return [];
+    if (Array.isArray(interestsString)) return interestsString;
+    return interestsString.split(',').map(i => i.trim()).filter(i => i);
+  };
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     educational_level: "",
     current_grade: "",
     prefered_schedule: "",
+    interests: [],
+    career_interests: [],
   });
+  
+  const [newInterest, setNewInterest] = useState('');
+  const [newCareerInterest, setNewCareerInterest] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -21,6 +33,8 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
         educational_level: learner.educational_level || "",
         current_grade: learner.current_grade || "",
         prefered_schedule: learner.prefered_schedule || "",
+        interests: parseInterests(learner.interests),
+        career_interests: parseInterests(learner.career_interests),
       });
       setError(null);
     }
@@ -30,13 +44,54 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const addInterest = () => {
+    if (newInterest.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        interests: [...prev.interests, newInterest.trim()]
+      }));
+      setNewInterest('');
+    }
+  };
+
+  const removeInterest = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      interests: prev.interests.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addCareerInterest = () => {
+    if (newCareerInterest.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        career_interests: [...prev.career_interests, newCareerInterest.trim()]
+      }));
+      setNewCareerInterest('');
+    }
+  };
+
+  const removeCareerInterest = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      career_interests: prev.career_interests.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     
     try {
-      await onSave(formData);
+      // Convertir arrays a strings antes de enviar
+      const dataToSend = {
+        ...formData,
+        interests: formData.interests.join(','),
+        career_interests: formData.career_interests.join(',')
+      };
+      
+      await onSave(dataToSend);
       
       // Mostrar mensaje de éxito
       const successMsg = document.createElement('div');
@@ -193,6 +248,98 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
                 Noche
               </option>
             </select>
+          </div>
+
+          {/* Intereses Generales */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Intereses Generales
+            </label>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newInterest}
+                onChange={(e) => setNewInterest(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addInterest();
+                  }
+                }}
+                placeholder="Ej: Programación, Diseño, Marketing..."
+                className="flex-1 px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none transition-all"
+              />
+              <button
+                type="button"
+                onClick={addInterest}
+                className="px-4 py-2.5 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {formData.interests.map((interest, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#378BA4]/20 border border-[#378BA4]/40 rounded-full text-sm text-white"
+                >
+                  {interest}
+                  <button
+                    type="button"
+                    onClick={() => removeInterest(index)}
+                    className="hover:text-red-400 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Intereses de Carrera */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Carreras de Interés
+            </label>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newCareerInterest}
+                onChange={(e) => setNewCareerInterest(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCareerInterest();
+                  }
+                }}
+                placeholder="Ej: Ingeniería de Software, Medicina..."
+                className="flex-1 px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none transition-all"
+              />
+              <button
+                type="button"
+                onClick={addCareerInterest}
+                className="px-4 py-2.5 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {formData.career_interests.map((interest, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/20 border border-amber-500/40 rounded-full text-sm text-white"
+                >
+                  {interest}
+                  <button
+                    type="button"
+                    onClick={() => removeCareerInterest(index)}
+                    className="hover:text-red-400 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
 
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">

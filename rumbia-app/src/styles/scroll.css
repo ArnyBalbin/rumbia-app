@@ -1,0 +1,14 @@
+/* Bloquea el scroll completamente */
+.no-scroll {
+  overflow: hidden !important;
+}
+
+/* Oculta la barra de scroll pero deja el desplazamiento funcional */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

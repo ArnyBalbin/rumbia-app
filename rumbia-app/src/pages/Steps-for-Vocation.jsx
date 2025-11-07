@@ -1,5 +1,6 @@
 import { ArrowRight, ArrowLeft, Download, SkipForward, Sparkles } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import '../styles/scroll.css'
 
 // 🧩 Importa tus componentes comunes
 import Header from '../components/common/Header'
@@ -14,6 +15,13 @@ const StepsForVocation = () => {
 
   useEffect(() => {
     setIsVisible(true)
+    // Ocultar scrollbars del body
+    document.body.style.overflow = 'hidden'
+    
+    return () => {
+      // Restaurar scroll al desmontar
+      document.body.style.overflow = 'auto'
+    }
   }, [])
 
   const steps = Array.from({ length: 19 }, (_, i) => ({
@@ -46,7 +54,7 @@ const StepsForVocation = () => {
   const currentStepData = steps[currentStep - 1]
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] relative overflow-hidden">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] relative overflow-hidden">
       {/* 🔵 Orbes de fondo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -left-20 w-96 h-96 bg-[#378BA4] rounded-full blur-3xl opacity-20 animate-float"></div>
@@ -57,19 +65,19 @@ const StepsForVocation = () => {
       </div>
 
       {/* 🧭 Header con glassmorphism */}
-      <div className="relative z-20">
+      <div className="relative z-20 flex-shrink-0">
         <div className="bg-white/5 backdrop-blur-xl border-b border-white/10">
           <Header />
         </div>
       </div>
 
-      {/* 🎯 Contenido principal */}
-      <main className="flex-grow relative z-10">
-        <section className="py-20 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
+      {/* 🎯 Contenido principal con scroll interno */}
+      <main className="flex-grow relative z-10 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        <section className="py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto w-full">
 
             {/* Title Section */}
-            <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`text-center mb-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Sparkles className="w-6 h-6 text-[#378BA4]" />
                 <span className="text-[#378BA4] font-semibold uppercase tracking-wider text-sm">Tu Camino Vocacional</span>
@@ -211,7 +219,7 @@ const StepsForVocation = () => {
             </div>
 
             {/* Progress Stats */}
-            <div className={`mt-8 grid grid-cols-3 gap-4 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`mt-8 mb-8 grid grid-cols-3 gap-4 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="bg-[#012E4A]/80 backdrop-blur-xl rounded-xl border border-[#378BA4]/30 p-4 text-center">
                 <p className="text-[#378BA4] font-bold text-2xl">{currentStep}</p>
                 <p className="text-gray-400 text-sm">Paso Actual</p>
@@ -230,7 +238,7 @@ const StepsForVocation = () => {
       </main>
 
       {/* 🦶 Footer con glassmorphism */}
-      <div className="relative z-20">
+      <div className="relative z-20 flex-shrink-0">
         <div className="bg-white/5 backdrop-blur-xl border-t border-white/10">
           <Footer />
         </div>
@@ -243,6 +251,16 @@ const StepsForVocation = () => {
         @keyframes float {
           0%, 100% { transform: translateY(0px) translateX(0px); }
           50% { transform: translateY(-30px) translateX(20px); }
+        }
+        
+        /* Ocultar scrollbar pero mantener funcionalidad */
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* IE y Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;  /* Chrome, Safari y Opera */
         }
       `}</style>
     </div>

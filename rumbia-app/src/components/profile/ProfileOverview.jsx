@@ -1,10 +1,20 @@
-import { User, Calendar, GraduationCap, BookOpen, Clock, Briefcase, Globe, FileText } from "lucide-react";
+import { User, Calendar, GraduationCap, BookOpen, Clock, Briefcase, Globe, FileText, Heart, Target } from "lucide-react";
 
 const ProfileOverview = ({ userData }) => {
   const hasLearner = userData.learner && userData.learner.is_learner;
   const hasMentor = userData.mentor && userData.mentor.is_mentor;
   const learnerData = userData.learner || {};
   const mentorData = userData.mentor || {};
+
+  // Función helper para parsear intereses
+  const parseInterests = (interestsString) => {
+    if (!interestsString) return [];
+    if (Array.isArray(interestsString)) return interestsString;
+    return interestsString.split(',').map(i => i.trim()).filter(i => i);
+  };
+
+  const interests = parseInterests(learnerData.interests);
+  const careerInterests = parseInterests(learnerData.career_interests);
 
   return (
     <div className="space-y-6">
@@ -45,7 +55,7 @@ const ProfileOverview = ({ userData }) => {
         <div>
           <h3 className="text-xl font-bold text-white mb-4">Perfil de Estudiante</h3>
           <div className="bg-[#036280]/20 border border-[#378BA4]/20 rounded-lg p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="flex items-start gap-3">
                 <GraduationCap className="w-5 h-5 text-[#378BA4] mt-1" />
                 <div>
@@ -74,6 +84,55 @@ const ProfileOverview = ({ userData }) => {
                 </div>
               </div>
             </div>
+
+            {/* Intereses Generales */}
+            {interests.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Heart className="w-5 h-5 text-[#378BA4]" />
+                  <h4 className="text-lg font-semibold text-white">Intereses</h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {interests.map((interest, index) => (
+                    <span
+                      key={index}
+                      className="px-4 py-2 bg-[#378BA4]/20 border border-[#378BA4]/40 rounded-lg text-sm text-white"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Carreras de Interés */}
+            {careerInterests.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Target className="w-5 h-5 text-amber-500" />
+                  <h4 className="text-lg font-semibold text-white">Carreras de Interés</h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {careerInterests.map((interest, index) => (
+                    <span
+                      key={index}
+                      className="px-4 py-2 bg-amber-500/20 border border-amber-500/40 rounded-lg text-sm text-white"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Mensaje si no hay intereses */}
+            {interests.length === 0 && careerInterests.length === 0 && (
+              <div className="text-center py-6">
+                <p className="text-gray-400 text-sm">
+                  Aún no has agregado intereses. Edita tu perfil para añadirlos.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -8,6 +8,7 @@ import RegisterStep1 from './RegisterStep1';
 import RegisterStep2Learner from './RegisterStep2Learner';
 import RegisterStep2Mentor from './RegisterStep2Mentor';
 import AlertMessage from './AlertMessage';
+import '../../styles/scroll.css'
 
 // Modal de Felicitaciones - NUEVO
 const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelectCareer, selectedCareer, careerOptions }) => {
