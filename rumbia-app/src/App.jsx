@@ -9,6 +9,7 @@ import Profile from './pages/Profile';
 import Discover from './pages/Discover';
 import Schedule from './pages/Schedule'
 import Session from './pages/Session'
+import StepsForVocation from './pages/Steps-for-Vocation';
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/discover" element={<Discover />} />
         <Route path="/schedule/:id" element={<Schedule />} />
         <Route path="/session/:id" element={<Session />} />
+        <Route path='/Steps-for-Vocation' element={<StepsForVocation />} />
       </Routes>
     </AuthProvider>
   )
