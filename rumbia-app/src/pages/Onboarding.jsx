@@ -10,7 +10,7 @@ const Onboarding = () => {
     if (!isAuthenticated) {
       navigate('/login')
     } else if (user?.onboardingCompleted) {
-      navigate('/home')
+      navigate('/')
     }
   }, [isAuthenticated, user, navigate])
 

@@ -9,6 +9,7 @@ import {
   Sparkles,
   ChevronDown,
   Settings,
+  ClipboardList, // Icono para el test
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
@@ -135,6 +136,7 @@ const Header = () => {
                 {[
                   { label: "Inicio", icon: Home, href: "/" },
                   { label: "Descubrir", icon: Compass, href: "/discover" },
+                  { label: "Realiza tu test", icon: ClipboardList, href: "/Steps-for-Vocation" },
                 ].map((item) => (
                   <Link
                     key={item.label}
@@ -289,6 +291,7 @@ const Header = () => {
                     {[
                       { label: "Inicio", icon: Home, href: "/" },
                       { label: "Descubrir", icon: Compass, href: "/discover" },
+                      { label: "Realiza tu test", icon: ClipboardList, href: "/Steps-for-Vocation" },
                       { label: "Mi perfil", icon: User, href: "/profile" },
                       { label: "Configuración", icon: Settings, href: "/settings" },
                     ].map((item) => (

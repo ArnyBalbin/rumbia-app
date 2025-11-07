@@ -327,7 +327,7 @@ const RegisterForm = () => {
       // Login sin seleccionar carrera
       await loginAfterRegister(formData.email, formData.password);
       // Navegar SIN await
-      navigate('/home', { replace: true });
+      navigate('/', { replace: true });
     } catch (err) {
       console.error('Error al hacer login:', err);
       setError('Error al iniciar sesión');

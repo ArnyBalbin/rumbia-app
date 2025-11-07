@@ -72,7 +72,7 @@ const ScheduleForm = ({ sessionId, sessionPrice, isFirstTime }) => {
             : 'Verificaremos tu pago y te confirmaremos la inscripción pronto.'}
         </p>
         <div className="flex gap-4 justify-center">
-          <Button onClick={() => navigate('/home')}>
+          <Button onClick={() => navigate('/')}>
             Volver al inicio
           </Button>
           <Button variant="ghost" onClick={() => navigate('/discover')}>
