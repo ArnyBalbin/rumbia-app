@@ -9,7 +9,7 @@ import {
   Sparkles,
   ChevronDown,
   Settings,
-  ClipboardList, // Icono para el test
+  ClipboardList,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
@@ -61,7 +61,7 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/login");
   };
 
   const handleSectionNav = (e, sectionId) => {

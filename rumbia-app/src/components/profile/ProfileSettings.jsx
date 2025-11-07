@@ -1,10 +1,14 @@
 import { Settings, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
-const ProfileSettings = () => {
+const ProfileSettings = ({ setUserMenuOpen }) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("currentUser");
-    window.location.href = "/login";
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -24,7 +28,10 @@ const ProfileSettings = () => {
           </p>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={() => {
+            handleLogout();
+            setUserMenuOpen(false);
+          }}
           className="w-full py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2"
         >
           <LogOut className="w-5 h-5" />
