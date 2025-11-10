@@ -17,7 +17,7 @@ const Register = () => {
   }, []) 
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] relative overflow-hidden custom-scrollbar">
       {/* Orbes de fondo (mismo estilo que Login) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -left-20 w-96 h-96 bg-[#378BA4] rounded-full blur-3xl opacity-20 animate-float"></div>
@@ -46,11 +46,31 @@ const Register = () => {
         </div>
       </div>
 
-      {/* Animación de los orbes */}
+      {/* Animación de los orbes + CSS para ocultar scrollbar */}
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) translateX(0px); }
           50% { transform: translateY(-30px) translateX(20px); }
+        }
+
+        /* Ocultar scrollbar en toda la página */
+        .custom-scrollbar {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE y Edge */
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          display: none; /* Chrome, Safari y Opera */
+        }
+
+        /* También ocultar scrollbar del body */
+        body {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        body::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </div>

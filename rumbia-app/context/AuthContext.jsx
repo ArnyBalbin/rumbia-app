@@ -109,10 +109,10 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.detail || data.message || 'Error en el registro');
       }
 
-      // Solo registrar sin hacer login automático - el usuario lo hará después del modal
-      // Guardamos el email/password temporalmente para el login automático después
+      // CRÍTICO: Retornar el user_code que viene del backend
       return { 
         success: true, 
+        user_code: data.user_code,  // ✅ ESTO ES LO QUE FALTABA
         email: formData.email, 
         password: formData.password,
         data: data 
@@ -123,8 +123,40 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loginAfterRegister = async (email, password) => {
-    return await login(email, password);
+  const loginAfterRegister = async (userCode) => {
+    try {
+      // Obtener info del usuario con el user_code
+      const response = await fetch(ENDPOINTS.GET_USER_INFO(userCode), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener información del usuario');
+      }
+
+      const userData = await response.json();
+
+      // Guardar datos del usuario
+      const userInfo = {
+        user_code: userCode,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+        tipo: userData.tipo
+      };
+
+      localStorage.setItem('currentUser', JSON.stringify(userInfo));
+      setUser(userInfo);
+      setIsAuthenticated(true);
+
+      return { success: true, data: userInfo };
+    } catch (error) {
+      console.error('Error en loginAfterRegister:', error);
+      return { success: false, error: error.message };
+    }
   };
 
   const logout = () => {
@@ -205,6 +237,38 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateLearnerProfile = async (profileData) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('currentUser'));
+      const userCode = userData?.user_code;
+
+      if (!userCode) {
+        throw new Error('No se encontró el user_code');
+      }
+
+      const response = await fetch(ENDPOINTS.UPDATE_LEARNER_PROFILE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_code: userCode,
+          ...profileData
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar perfil de learner');
+      }
+
+      const updatedData = await response.json();
+      return { success: true, data: updatedData };
+    } catch (error) {
+      console.error('Error updating learner profile:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     user,
     isAuthenticated,
@@ -216,6 +280,7 @@ export const AuthProvider = ({ children }) => {
     refreshToken,
     updateUser,
     updateUserProfile,
+    updateLearnerProfile,
     checkAuth
   };
 

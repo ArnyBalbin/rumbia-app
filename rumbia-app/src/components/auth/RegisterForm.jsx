@@ -1,17 +1,22 @@
 // src/components/auth/RegisterForm.jsx
-import { useState, useEffect } from 'react';
-import { Sparkles, ArrowRight, Check } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext';
-import AuthCard from './AuthCard';
-import RegisterStep1 from './RegisterStep1';
-import RegisterStep2Learner from './RegisterStep2Learner';
-import RegisterStep2Mentor from './RegisterStep2Mentor';
-import AlertMessage from './AlertMessage';
-import '../../styles/scroll.css'
+import { useState, useEffect } from "react";
+import { Sparkles, ArrowRight, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import RegisterStep1 from "./RegisterStep1";
+import RegisterStep2Mentor from "./RegisterStep2Mentor";
+import AlertMessage from "./AlertMessage";
 
-// Modal de Felicitaciones - NUEVO
-const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelectCareer, selectedCareer, careerOptions }) => {
+// Modal de Felicitaciones
+const CongratulationsModal = ({
+  onSkip,
+  onKnowCareer,
+  onDontKnowCareer,
+  onSelectCareer,
+  selectedCareer,
+  careerOptions,
+  userType,
+}) => {
   const [showCareerSelector, setShowCareerSelector] = useState(false);
 
   const handleSelectCareer = (career) => {
@@ -19,11 +24,51 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
     setShowCareerSelector(false);
   };
 
+  // Si es mentor, solo mostrar botón de continuar
+  if (userType === "mentor") {
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="relative bg-gradient-to-br from-[#378BA4]/20 to-[#036280]/20 backdrop-blur-xl rounded-3xl border border-white/20 p-8 md:p-12 max-w-md w-full shadow-2xl">
+          <div className="flex justify-center mb-6 mt-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#378BA4] to-[#036280] rounded-full blur-2xl opacity-50"></div>
+              <div className="relative bg-gradient-to-r from-[#378BA4] to-[#036280] p-4 rounded-full">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center space-y-2 mb-8">
+            <h2 className="text-4xl font-black text-white">
+              ¡Bienvenido Mentor!
+            </h2>
+            <p className="text-xl font-bold bg-gradient-to-r from-[#378BA4] via-white to-[#378BA4] bg-clip-text text-transparent">
+              Tu cuenta ha sido creada
+            </p>
+            <p className="text-gray-300 mt-4">
+              Estás listo para comenzar a guiar estudiantes
+            </p>
+          </div>
+
+          <button
+            onClick={onSkip}
+            className="w-full py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/50 transition-all transform hover:scale-105"
+          >
+            Ir a mi perfil
+          </button>
+
+          <div className="absolute -top-4 -right-4 w-6 h-6 bg-[#378BA4] rounded-full blur-md opacity-60"></div>
+          <div className="absolute -bottom-4 -left-4 w-5 h-5 bg-[#036280] rounded-full blur-md opacity-60"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Para learners - mostrar selector de carrera
   if (showCareerSelector) {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="relative bg-gradient-to-br from-[#378BA4]/20 to-[#036280]/20 backdrop-blur-xl rounded-3xl border border-white/20 p-8 md:p-12 max-w-md w-full shadow-2xl max-h-[70vh] overflow-y-auto">
-          {/* Botón atrás */}
+        <div className="relative bg-gradient-to-br from-[#378BA4]/20 to-[#036280]/20 backdrop-blur-xl rounded-3xl border border-white/20 p-8 md:p-12 max-w-md w-full shadow-2xl max-h-[70vh] overflow-y-auto custom-scrollbar">
           <button
             onClick={() => setShowCareerSelector(false)}
             className="absolute top-4 left-4 text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-sm font-bold group"
@@ -32,12 +77,12 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
             atrás
           </button>
 
-          {/* Header */}
           <div className="text-center mb-6 mt-6">
-            <h3 className="text-2xl font-black text-white">¿Qué carrera quieres estudiar?</h3>
+            <h3 className="text-2xl font-black text-white">
+              ¿Qué carrera quieres estudiar?
+            </h3>
           </div>
 
-          {/* Grid de carreras */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             {careerOptions.map((career) => (
               <button
@@ -45,19 +90,20 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
                 onClick={() => handleSelectCareer(career)}
                 className={`p-4 bg-white/10 backdrop-blur-xl rounded-lg transition-all text-left font-medium text-sm ${
                   selectedCareer === career
-                    ? 'border-2 border-white bg-[#378BA4]/20'
-                    : 'border-2 border-white/20 hover:border-white/50'
+                    ? "border-2 border-white bg-[#378BA4]/20"
+                    : "border-2 border-white/20 hover:border-white/50"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-white">{career}</span>
-                  {selectedCareer === career && <Check className="w-4 h-4 text-white" />}
+                  {selectedCareer === career && (
+                    <Check className="w-4 h-4 text-white" />
+                  )}
                 </div>
               </button>
             ))}
           </div>
 
-          {/* Botón confirmar */}
           {selectedCareer && (
             <button
               onClick={() => onKnowCareer(selectedCareer)}
@@ -67,7 +113,6 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
             </button>
           )}
 
-          {/* Decoration */}
           <div className="absolute -top-4 -right-4 w-6 h-6 bg-[#378BA4] rounded-full blur-md opacity-60"></div>
           <div className="absolute -bottom-4 -left-4 w-5 h-5 bg-[#036280] rounded-full blur-md opacity-60"></div>
         </div>
@@ -78,7 +123,6 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="relative bg-gradient-to-br from-[#378BA4]/20 to-[#036280]/20 backdrop-blur-xl rounded-3xl border border-white/20 p-8 md:p-12 max-w-md w-full shadow-2xl">
-        {/* Skip button */}
         <button
           onClick={onSkip}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-sm font-bold group"
@@ -87,7 +131,6 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
 
-        {/* Icono de felicitaciones */}
         <div className="flex justify-center mb-6 mt-4">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-[#378BA4] to-[#036280] rounded-full blur-2xl opacity-50"></div>
@@ -97,7 +140,6 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
           </div>
         </div>
 
-        {/* Contenido */}
         <div className="text-center space-y-2 mb-8">
           <h2 className="text-4xl font-black text-white">¡Felicidades!</h2>
           <p className="text-xl font-bold bg-gradient-to-r from-[#378BA4] via-white to-[#378BA4] bg-clip-text text-transparent">
@@ -108,23 +150,21 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
           </p>
         </div>
 
-        {/* Botones */}
         <div className="space-y-3">
           <button
             onClick={() => setShowCareerSelector(true)}
             className="w-full py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/50 transition-all transform hover:scale-105"
           >
-            Ya se que quiero estudiar
+            Ya sé que quiero estudiar
           </button>
           <button
             onClick={onDontKnowCareer}
             className="w-full py-4 bg-white/10 backdrop-blur-xl border-2 border-white/20 text-white font-bold rounded-xl hover:border-white/50 transition-all transform hover:scale-105"
           >
-            No se que carrera estudiar
+            No sé que carrera estudiar
           </button>
         </div>
 
-        {/* Decoration */}
         <div className="absolute -top-4 -right-4 w-6 h-6 bg-[#378BA4] rounded-full blur-md opacity-60"></div>
         <div className="absolute -bottom-4 -left-4 w-5 h-5 bg-[#036280] rounded-full blur-md opacity-60"></div>
       </div>
@@ -134,116 +174,119 @@ const CongratulationsModal = ({ onSkip, onKnowCareer, onDontKnowCareer, onSelect
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [step, setStep] = useState(1);
   const [showCongratulations, setShowCongratulations] = useState(false);
-  const [selectedCareer, setSelectedCareer] = useState('');
-  
+  const [selectedCareer, setSelectedCareer] = useState("");
+  const [registeredUserCode, setRegisteredUserCode] = useState("");
+
   const navigate = useNavigate();
-  const { register, loginAfterRegister, updateUserProfile } = useAuth();
+  const { register, loginAfterRegister, updateLearnerProfile } = useAuth();
 
   const careerOptions = [
-    'Ingeniería de Sistemas', 'Medicina', 'Derecho', 'Administración',
-    'Psicología', 'Arquitectura', 'Contabilidad', 'Enfermería',
-    'Marketing', 'Diseño Gráfico', 'Educación', 'Gastronomía'
+    "Ingeniería de Sistemas",
+    "Medicina",
+    "Derecho",
+    "Administración",
+    "Psicología",
+    "Arquitectura",
+    "Contabilidad",
+    "Enfermería",
+    "Marketing",
+    "Diseño Gráfico",
+    "Educación",
+    "Gastronomía",
   ];
 
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    tipo: 'learner'
-  });
-
-  const [learnerData, setLearnerData] = useState({
-    educational_level: '',
-    current_grade: '',
-    interests: [],
-    prefered_schedule: ''
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    tipo: "learner",
   });
 
   const [mentorData, setMentorData] = useState({
-    id_career: '',
-    alt_career: '',
-    description: '',
-    college: '',
-    current_semester: '',
-    pro_title: '',
-    experience_years: '',
-    cv_url: '',
-    graduation_year: ''
+    career: "",
+    alt_career: "",
+    description: "",
+    language: "Español",
   });
 
   useEffect(() => {
     setIsVisible(true);
-    
+
     const handleMouseMove = (e) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
       });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
-    setError('');
-    setSuccessMessage('');
-  };
-
-  const handleLearnerChange = (e) => {
-    const { name, value } = e.target;
-    setLearnerData({
-      ...learnerData,
-      [name]: value
-    });
+    setError("");
+    setSuccessMessage("");
   };
 
   const handleMentorChange = (e) => {
     const { name, value } = e.target;
     setMentorData({
       ...mentorData,
-      [name]: value
+      [name]: value,
     });
   };
 
   const handleNextStep = () => {
     if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setError("Las contraseñas no coinciden");
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
-    if (!formData.email || !formData.password || !formData.first_name || !formData.last_name) {
-      setError('Por favor completa todos los campos');
+    if (
+      !formData.email ||
+      !formData.password ||
+      !formData.first_name ||
+      !formData.last_name
+    ) {
+      setError("Por favor completa todos los campos");
       return;
     }
 
-    setStep(2);
-    setError('');
+    // Si es learner, ir directo al registro
+    if (formData.tipo === "learner") {
+      handleSubmit();
+    } else {
+      // Si es mentor, ir al paso 2
+      setStep(2);
+      setError("");
+    }
   };
+
+  // Cambia SOLO la función handleSubmit en RegisterForm.jsx
 
   const handleSubmit = async () => {
     setLoading(true);
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
 
     try {
       const basePayload = {
@@ -251,45 +294,73 @@ const RegisterForm = () => {
         last_name: formData.last_name,
         email: formData.email,
         password: formData.password,
-        tipo: formData.tipo
+        tipo: formData.tipo,
       };
 
-      if (formData.tipo === 'mentor') {
-        basePayload.language = 'Español';
-        basePayload.description = mentorData.description || 'Mentor experimentado en mi área';
-        
-        if (mentorData.id_career === '999') {
-          basePayload.alt_career = mentorData.alt_career;
-          basePayload.career = null;
-        } else {
-          basePayload.career = parseInt(mentorData.id_career);
-          basePayload.alt_career = null;
+      // Agregar campos específicos de mentor si aplica
+      if (formData.tipo === "mentor") {
+        // Validar campos obligatorios del mentor
+        if (!mentorData.description) {
+          setError("La descripción es obligatoria para mentores");
+          setLoading(false);
+          return;
         }
 
-        // Agregar campos adicionales del mentor
-        if (mentorData.college) basePayload.college = mentorData.college;
-        if (mentorData.current_semester) basePayload.current_semester = mentorData.current_semester;
-        if (mentorData.pro_title) basePayload.pro_title = mentorData.pro_title;
-        if (mentorData.experience_years) basePayload.experience_years = mentorData.experience_years;
-        if (mentorData.graduation_year) basePayload.graduation_year = mentorData.graduation_year;
+        basePayload.language = mentorData.language || "Español";
+        basePayload.description = mentorData.description;
+
+        // Career o alt_career (al menos uno debe estar presente)
+        if (mentorData.career === "999") {
+          if (!mentorData.alt_career) {
+            setError("Por favor especifica tu carrera");
+            setLoading(false);
+            return;
+          }
+          basePayload.alt_career = mentorData.alt_career;
+          // NO enviar career si es "Otra"
+        } else if (mentorData.career) {
+          basePayload.career = parseInt(mentorData.career);
+          // NO enviar alt_career si seleccionó una carrera válida
+        } else {
+          setError("Por favor selecciona tu carrera");
+          setLoading(false);
+          return;
+        }
       }
 
-      console.log('📤 Datos a enviar al registro:', basePayload);
+      console.log(
+        "📤 Payload final a enviar:",
+        JSON.stringify(basePayload, null, 2)
+      );
 
       const result = await register(basePayload);
 
+      console.log("📥 Resultado del registro:", result);
+
       if (!result.success) {
+        console.error("❌ Registro falló:", result.error);
         throw new Error(result.error);
       }
 
-      // Mostrar modal de felicitaciones
-      console.log('✅ Registro exitoso, mostrando modal');
+      if (!result.user_code) {
+        console.error("❌ No se recibió user_code:", result);
+        throw new Error("No se recibió user_code del servidor");
+      }
+
+      // Guardar el user_code para usarlo después
+      setRegisteredUserCode(result.user_code);
+
+      console.log("✅ Registro exitoso, user_code:", result.user_code);
       setLoading(false);
       setShowCongratulations(true);
-      
     } catch (err) {
-      console.error('❌ Error en registro:', err);
-      setError(err.message);
+      console.error("❌ Error en handleSubmit:", err);
+      console.error("Stack:", err.stack);
+
+      // Mostrar error más detallado
+      const errorMessage =
+        err.message || "Error desconocido al registrar usuario";
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -297,41 +368,70 @@ const RegisterForm = () => {
   const handleKnowCareer = async (career) => {
     try {
       setLoading(true);
-      // Actualizar carrera
-      await updateUserProfile({ career_interest: career });
+
+      // Actualizar perfil de learner con la carrera seleccionada
+      const updateResult = await updateLearnerProfile({
+        career_interests: career,
+      });
+
+      if (!updateResult.success) {
+        throw new Error(updateResult.error);
+      }
+
       // Login después de actualizar
-      await loginAfterRegister(formData.email, formData.password);
-      // Navegar SIN await
-      navigate('/profile', { replace: true });
+      const loginResult = await loginAfterRegister(registeredUserCode);
+
+      if (!loginResult.success) {
+        throw new Error(loginResult.error);
+      }
+
+      // Navegar al perfil
+      navigate("/profile", { replace: true });
     } catch (err) {
-      console.error('Error al actualizar carrera:', err);
-      setError('Error al guardar tu carrera');
-    } finally {
+      console.error("Error al actualizar carrera:", err);
+      setError("Error al guardar tu carrera");
       setLoading(false);
     }
   };
 
   const handleDontKnowCareer = async () => {
     try {
+      setLoading(true);
+
       // Login sin seleccionar carrera
-      await loginAfterRegister(formData.email, formData.password);
-      // Navegar SIN await
-      navigate('/Steps-for-Vocation', { replace: true });
+      const loginResult = await loginAfterRegister(registeredUserCode);
+
+      if (!loginResult.success) {
+        throw new Error(loginResult.error);
+      }
+
+      // Navegar a test vocacional
+      navigate("/Steps-for-Vocation", { replace: true });
     } catch (err) {
-      console.error('Error al hacer login:', err);
-      setError('Error al iniciar sesión');
+      console.error("Error al hacer login:", err);
+      setError("Error al iniciar sesión");
+      setLoading(false);
     }
   };
 
   const handleSkip = async () => {
     try {
-      // Login sin seleccionar carrera
-      await loginAfterRegister(formData.email, formData.password);
-      // Navegar SIN await
-      navigate('/', { replace: true });
+      setLoading(true);
+
+      // Login sin información adicional
+      const loginResult = await loginAfterRegister(registeredUserCode);
+
+      if (!loginResult.success) {
+        throw new Error(loginResult.error);
+      }
+
+      // Navegar al home o perfil según el tipo
+      const destination = formData.tipo === "mentor" ? "/profile" : "/";
+      navigate(destination, { replace: true });
     } catch (err) {
-      console.error('Error al hacer login:', err);
-      setError('Error al iniciar sesión');
+      console.error("Error al hacer login:", err);
+      setError("Error al iniciar sesión");
+      setLoading(false);
     }
   };
 
@@ -339,24 +439,16 @@ const RegisterForm = () => {
   const getCardProps = () => {
     if (step === 1) {
       return {
-        title: 'Crea tu cuenta',
-        subtitle: 'en Rumbía',
-        badge: 'Únete a la comunidad'
+        title: "Crea tu cuenta",
+        subtitle: "en Rumbía",
+        badge: "Únete a la comunidad",
       };
     }
-    
-    if (formData.tipo === 'learner') {
-      return {
-        title: 'Cuéntanos sobre ti',
-        subtitle: 'para ayudarte mejor',
-        badge: 'Perfil de Estudiante'
-      };
-    }
-    
+
     return {
-      title: 'Completa tu perfil',
-      subtitle: 'de mentor',
-      badge: 'Perfil de Mentor'
+      title: "Completa tu perfil",
+      subtitle: "de mentor",
+      badge: "Perfil de Mentor",
     };
   };
 
@@ -373,19 +465,24 @@ const RegisterForm = () => {
           onSelectCareer={setSelectedCareer}
           selectedCareer={selectedCareer}
           careerOptions={careerOptions}
+          userType={formData.tipo}
         />
       )}
 
-      <div 
-        className={`relative transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+      <div
+        className={`relative transition-all duration-1000 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+        }`}
         style={{
-          transform: `perspective(1000px) rotateY(${mousePosition.x * 0.2}deg) rotateX(${-mousePosition.y * 0.2}deg)`,
-          transformStyle: 'preserve-3d'
+          transform: `perspective(1000px) rotateY(${
+            mousePosition.x * 0.2
+          }deg) rotateX(${-mousePosition.y * 0.2}deg)`,
+          transformStyle: "preserve-3d",
         }}
       >
         <div className="absolute -inset-4 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] rounded-3xl blur-2xl opacity-30 animate-pulse"></div>
 
-        <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+        <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto custom-scrollbar">
           <div className="h-1.5 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] animate-gradient-x sticky top-0 z-10"></div>
 
           <div className="p-8 md:p-10">
@@ -393,7 +490,9 @@ const RegisterForm = () => {
             <div className="text-center mb-8 space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#378BA4]/30 to-[#036280]/30 backdrop-blur-xl rounded-full border border-[#378BA4]/50 shadow-lg">
                 <Sparkles className="w-4 h-4 text-[#378BA4]" />
-                <span className="text-sm font-bold text-white">{cardProps.badge}</span>
+                <span className="text-sm font-bold text-white">
+                  {cardProps.badge}
+                </span>
               </div>
 
               <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">
@@ -403,7 +502,9 @@ const RegisterForm = () => {
                 </span>
               </h2>
               <p className="text-gray-300 text-sm">
-                {step === 1 ? 'Comienza tu viaje de orientación vocacional' : 'Completa tu información'}
+                {step === 1
+                  ? "Comienza tu viaje de orientación vocacional"
+                  : "Completa tu información"}
               </p>
             </div>
 
@@ -423,17 +524,7 @@ const RegisterForm = () => {
               />
             )}
 
-            {step === 2 && formData.tipo === 'learner' && (
-              <RegisterStep2Learner
-                learnerData={learnerData}
-                onChange={handleLearnerChange}
-                onBack={() => setStep(1)}
-                onSubmit={handleSubmit}
-                loading={loading}
-              />
-            )}
-
-            {step === 2 && formData.tipo === 'mentor' && (
+            {step === 2 && formData.tipo === "mentor" && (
               <RegisterStep2Mentor
                 mentorData={mentorData}
                 onChange={handleMentorChange}
@@ -447,9 +538,9 @@ const RegisterForm = () => {
             {step === 1 && (
               <div className="mt-8 text-center">
                 <p className="text-gray-300 text-sm">
-                  ¿Ya tienes cuenta?{' '}
+                  ¿Ya tienes cuenta?{" "}
                   <button
-                    onClick={() => navigate('/login')}
+                    onClick={() => navigate("/login")}
                     className="text-[#378BA4] hover:text-white font-bold inline-flex items-center gap-1 group transition-colors"
                   >
                     Inicia sesión
@@ -463,8 +554,18 @@ const RegisterForm = () => {
             <div className="mt-8 pt-6 border-t border-white/10">
               <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
                   </svg>
                   Datos seguros
                 </span>
@@ -514,6 +615,16 @@ const RegisterForm = () => {
 
         .animate-shake {
           animation: shake 0.3s ease-in-out;
+        }
+
+        /* Ocultar scrollbar */
+        .custom-scrollbar {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE y Edge */
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          display: none; /* Chrome, Safari y Opera */
         }
       `}</style>
     </div>
