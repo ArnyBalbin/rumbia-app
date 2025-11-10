@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }) => {
         setUser(parsedUser);
         setIsAuthenticated(true);
         
-        // Opcional: Verificar token con el backend
         await verifyToken(token);
       }
     } catch (error) {
@@ -70,13 +69,11 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.detail || data.message || 'Error al iniciar sesión');
       }
 
-      // Guardar tokens
       localStorage.setItem('accessToken', data.access);
       localStorage.setItem('refreshToken', data.refresh);
 
-      // Guardar datos del usuario con user_code
       const userData = {
-        user_code: data.user_code, // Campo principal
+        user_code: data.user_code,
         email: data.email || email,
         first_name: data.first_name,
         last_name: data.last_name,
@@ -109,10 +106,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.detail || data.message || 'Error en el registro');
       }
 
-      // CRÍTICO: Retornar el user_code que viene del backend
       return { 
         success: true, 
-        user_code: data.user_code,  // ✅ ESTO ES LO QUE FALTABA
+        user_code: data.user_code,
         email: formData.email, 
         password: formData.password,
         data: data 
@@ -125,7 +121,6 @@ export const AuthProvider = ({ children }) => {
 
   const loginAfterRegister = async (userCode) => {
     try {
-      // Obtener info del usuario con el user_code
       const response = await fetch(ENDPOINTS.GET_USER_INFO(userCode), {
         headers: {
           'Content-Type': 'application/json'
@@ -138,7 +133,6 @@ export const AuthProvider = ({ children }) => {
 
       const userData = await response.json();
 
-      // Guardar datos del usuario
       const userInfo = {
         user_code: userCode,
         email: userData.email,
@@ -226,7 +220,6 @@ export const AuthProvider = ({ children }) => {
 
       const updatedData = await response.json();
       
-      // Actualizar el usuario en el contexto
       const newUserData = { ...userData, ...profileData };
       updateUser(newUserData);
 

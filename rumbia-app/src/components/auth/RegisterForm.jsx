@@ -1,4 +1,3 @@
-// src/components/auth/RegisterForm.jsx
 import { useState, useEffect } from "react";
 import { Sparkles, ArrowRight, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +6,6 @@ import RegisterStep1 from "./RegisterStep1";
 import RegisterStep2Mentor from "./RegisterStep2Mentor";
 import AlertMessage from "./AlertMessage";
 
-// Modal de Felicitaciones
 const CongratulationsModal = ({
   onSkip,
   onKnowCareer,
@@ -24,7 +22,6 @@ const CongratulationsModal = ({
     setShowCareerSelector(false);
   };
 
-  // Si es mentor, solo mostrar botón de continuar
   if (userType === "mentor") {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -64,7 +61,6 @@ const CongratulationsModal = ({
     );
   }
 
-  // Para learners - mostrar selector de carrera
   if (showCareerSelector) {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -185,7 +181,7 @@ const RegisterForm = () => {
   const [registeredUserCode, setRegisteredUserCode] = useState("");
 
   const navigate = useNavigate();
-  const { register, loginAfterRegister, updateLearnerProfile } = useAuth();
+  const { register, login, updateLearnerProfile } = useAuth();
 
   const careerOptions = [
     "Ingeniería de Sistemas",
@@ -271,17 +267,13 @@ const RegisterForm = () => {
       return;
     }
 
-    // Si es learner, ir directo al registro
     if (formData.tipo === "learner") {
       handleSubmit();
     } else {
-      // Si es mentor, ir al paso 2
       setStep(2);
       setError("");
     }
   };
-
-  // Cambia SOLO la función handleSubmit en RegisterForm.jsx
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -297,9 +289,7 @@ const RegisterForm = () => {
         tipo: formData.tipo,
       };
 
-      // Agregar campos específicos de mentor si aplica
       if (formData.tipo === "mentor") {
-        // Validar campos obligatorios del mentor
         if (!mentorData.description) {
           setError("La descripción es obligatoria para mentores");
           setLoading(false);
@@ -309,7 +299,6 @@ const RegisterForm = () => {
         basePayload.language = mentorData.language || "Español";
         basePayload.description = mentorData.description;
 
-        // Career o alt_career (al menos uno debe estar presente)
         if (mentorData.career === "999") {
           if (!mentorData.alt_career) {
             setError("Por favor especifica tu carrera");
@@ -317,10 +306,8 @@ const RegisterForm = () => {
             return;
           }
           basePayload.alt_career = mentorData.alt_career;
-          // NO enviar career si es "Otra"
         } else if (mentorData.career) {
           basePayload.career = parseInt(mentorData.career);
-          // NO enviar alt_career si seleccionó una carrera válida
         } else {
           setError("Por favor selecciona tu carrera");
           setLoading(false);
@@ -328,38 +315,35 @@ const RegisterForm = () => {
         }
       }
 
-      console.log(
-        "📤 Payload final a enviar:",
-        JSON.stringify(basePayload, null, 2)
-      );
-
+      // 1. REGISTRAR usuario
       const result = await register(basePayload);
 
-      console.log("📥 Resultado del registro:", result);
-
       if (!result.success) {
-        console.error("❌ Registro falló:", result.error);
         throw new Error(result.error);
       }
 
       if (!result.user_code) {
-        console.error("❌ No se recibió user_code:", result);
         throw new Error("No se recibió user_code del servidor");
       }
 
-      // Guardar el user_code para usarlo después
-      setRegisteredUserCode(result.user_code);
+      // 2. LOGIN AUTOMÁTICO con las credenciales
+      console.log('🔐 Iniciando login automático...');
+      const loginResult = await login(formData.email, formData.password);
 
-      console.log("✅ Registro exitoso, user_code:", result.user_code);
+      if (!loginResult.success) {
+        console.error('❌ Error en login automático:', loginResult.error);
+        throw new Error(`Error al iniciar sesión: ${loginResult.error}`);
+      }
+
+      console.log('✅ Login exitoso:', loginResult.data);
       setLoading(false);
+      
+      // 3. MOSTRAR MODAL según tipo de usuario
       setShowCongratulations(true);
+
     } catch (err) {
       console.error("❌ Error en handleSubmit:", err);
-      console.error("Stack:", err.stack);
-
-      // Mostrar error más detallado
-      const errorMessage =
-        err.message || "Error desconocido al registrar usuario";
+      const errorMessage = err.message || "Error desconocido al registrar usuario";
       setError(errorMessage);
       setLoading(false);
     }
@@ -369,7 +353,6 @@ const RegisterForm = () => {
     try {
       setLoading(true);
 
-      // Actualizar perfil de learner con la carrera seleccionada
       const updateResult = await updateLearnerProfile({
         career_interests: career,
       });
@@ -378,14 +361,6 @@ const RegisterForm = () => {
         throw new Error(updateResult.error);
       }
 
-      // Login después de actualizar
-      const loginResult = await loginAfterRegister(registeredUserCode);
-
-      if (!loginResult.success) {
-        throw new Error(loginResult.error);
-      }
-
-      // Navegar al perfil
       navigate("/profile", { replace: true });
     } catch (err) {
       console.error("Error al actualizar carrera:", err);
@@ -397,19 +372,10 @@ const RegisterForm = () => {
   const handleDontKnowCareer = async () => {
     try {
       setLoading(true);
-
-      // Login sin seleccionar carrera
-      const loginResult = await loginAfterRegister(registeredUserCode);
-
-      if (!loginResult.success) {
-        throw new Error(loginResult.error);
-      }
-
-      // Navegar a test vocacional
       navigate("/Steps-for-Vocation", { replace: true });
     } catch (err) {
-      console.error("Error al hacer login:", err);
-      setError("Error al iniciar sesión");
+      console.error("Error:", err);
+      setError("Error al continuar");
       setLoading(false);
     }
   };
@@ -417,25 +383,14 @@ const RegisterForm = () => {
   const handleSkip = async () => {
     try {
       setLoading(true);
-
-      // Login sin información adicional
-      const loginResult = await loginAfterRegister(registeredUserCode);
-
-      if (!loginResult.success) {
-        throw new Error(loginResult.error);
-      }
-
-      // Navegar al home o perfil según el tipo
-      const destination = formData.tipo === "mentor" ? "/profile" : "/";
-      navigate(destination, { replace: true });
+      navigate("/profile", { replace: true });
     } catch (err) {
-      console.error("Error al hacer login:", err);
-      setError("Error al iniciar sesión");
+      console.error("Error:", err);
+      setError("Error al continuar");
       setLoading(false);
     }
   };
 
-  // Determinar título y badge según el paso
   const getCardProps = () => {
     if (step === 1) {
       return {
@@ -456,7 +411,6 @@ const RegisterForm = () => {
 
   return (
     <div className="w-full max-w-4xl p-4">
-      {/* Modal de Felicitaciones */}
       {showCongratulations && (
         <CongratulationsModal
           onSkip={handleSkip}
@@ -486,7 +440,6 @@ const RegisterForm = () => {
           <div className="h-1.5 bg-gradient-to-r from-[#378BA4] via-[#036280] to-[#378BA4] animate-gradient-x sticky top-0 z-10"></div>
 
           <div className="p-8 md:p-10">
-            {/* Header */}
             <div className="text-center mb-8 space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#378BA4]/30 to-[#036280]/30 backdrop-blur-xl rounded-full border border-[#378BA4]/50 shadow-lg">
                 <Sparkles className="w-4 h-4 text-[#378BA4]" />
@@ -508,11 +461,9 @@ const RegisterForm = () => {
               </p>
             </div>
 
-            {/* Alerts */}
             <AlertMessage type="error" message={error} />
             <AlertMessage type="success" message={successMessage} />
 
-            {/* Step Content */}
             {step === 1 && (
               <RegisterStep1
                 formData={formData}
@@ -534,7 +485,6 @@ const RegisterForm = () => {
               />
             )}
 
-            {/* Login Link (solo en step 1) */}
             {step === 1 && (
               <div className="mt-8 text-center">
                 <p className="text-gray-300 text-sm">
@@ -550,7 +500,6 @@ const RegisterForm = () => {
               </div>
             )}
 
-            {/* Footer */}
             <div className="mt-8 pt-6 border-t border-white/10">
               <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
@@ -617,14 +566,13 @@ const RegisterForm = () => {
           animation: shake 0.3s ease-in-out;
         }
 
-        /* Ocultar scrollbar */
         .custom-scrollbar {
-          scrollbar-width: none; /* Firefox */
-          -ms-overflow-style: none; /* IE y Edge */
+          scrollbar-width: none;
+          -ms-overflow-style: none;
         }
 
         .custom-scrollbar::-webkit-scrollbar {
-          display: none; /* Chrome, Safari y Opera */
+          display: none;
         }
       `}</style>
     </div>
