@@ -190,46 +190,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateUser = (userData) => {
-    setUser(userData);
-    localStorage.setItem('currentUser', JSON.stringify(userData));
-  };
-
-  const updateUserProfile = async (profileData) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const userData = JSON.parse(localStorage.getItem('currentUser'));
-      const userCode = userData?.user_code;
-
-      if (!userCode || !token) {
-        throw new Error('No autorizado');
-      }
-
-      const response = await fetch(ENDPOINTS.UPDATE_USER_PROFILE(userCode), {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(profileData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar perfil');
-      }
-
-      const updatedData = await response.json();
-      
-      const newUserData = { ...userData, ...profileData };
-      updateUser(newUserData);
-
-      return { success: true, data: updatedData };
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
   const updateLearnerProfile = async (profileData) => {
     try {
       const userData = JSON.parse(localStorage.getItem('currentUser'));
@@ -239,7 +199,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No se encontró el user_code');
       }
 
-      const response = await fetch(ENDPOINTS.UPDATE_LEARNER_PROFILE, {
+      const response = await fetch(ENDPOINTS.POST_LEARNER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -262,6 +222,141 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const convertLearnerToMentor = async (mentorData) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('currentUser'));
+      const userCode = userData?.user_code;
+
+      if (!userCode) {
+        throw new Error('No se encontró el user_code');
+      }
+
+      const response = await fetch(ENDPOINTS.LEARNER_TO_MENTOR, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_code: userCode,
+          ...mentorData
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al convertir a mentor');
+      }
+
+      // Actualizar el tipo de usuario en localStorage
+      const updatedUser = { ...userData, tipo: 'mentor' };
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error converting to mentor:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updateMentorProfile = async (profileData) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('currentUser'));
+      const userCode = userData?.user_code;
+
+      if (!userCode) {
+        throw new Error('No se encontró el user_code');
+      }
+
+      const response = await fetch(ENDPOINTS.POST_MENTOR, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_code: userCode,
+          ...profileData
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar perfil de mentor');
+      }
+
+      const updatedData = await response.json();
+      return { success: true, data: updatedData };
+    } catch (error) {
+      console.error('Error updating mentor profile:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const createSession = async (sessionData) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('currentUser'));
+      const userCode = userData?.user_code;
+
+      if (!userCode) {
+        throw new Error('No se encontró el user_code');
+      }
+
+      const response = await fetch(ENDPOINTS.CREATE_SESSION, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_code: userCode,
+          ...sessionData
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear sesión');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error creating session:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getSessions = async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+      
+      if (filters.session_status) params.append('session_status', filters.session_status);
+      if (filters.career_id) params.append('career_id', filters.career_id);
+      if (filters.category_id) params.append('category_id', filters.category_id);
+      if (filters.start_date) params.append('start_date', filters.start_date);
+      if (filters.end_date) params.append('end_date', filters.end_date);
+
+      const url = `${ENDPOINTS.GET_SESSIONS}${params.toString() ? '?' + params.toString() : ''}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener sesiones');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error getting sessions:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     user,
     isAuthenticated,
@@ -271,10 +366,12 @@ export const AuthProvider = ({ children }) => {
     loginAfterRegister,
     logout,
     refreshToken,
-    updateUser,
-    updateUserProfile,
     updateLearnerProfile,
-    checkAuth
+    checkAuth,
+    convertLearnerToMentor,
+    updateMentorProfile,
+    createSession,
+    getSessions
   };
 
   return (

@@ -352,20 +352,25 @@ const RegisterForm = () => {
   const handleKnowCareer = async (career) => {
     try {
       setLoading(true);
+      console.log('📚 Guardando career_interests:', career);
 
+      // Actualizar el campo career_interests del modelo Learner
       const updateResult = await updateLearnerProfile({
         career_interests: career,
       });
 
       if (!updateResult.success) {
+        console.error('❌ Error al actualizar career_interests:', updateResult.error);
         throw new Error(updateResult.error);
       }
 
+      console.log('✅ Career interests actualizado correctamente');
       navigate("/profile", { replace: true });
     } catch (err) {
-      console.error("Error al actualizar carrera:", err);
-      setError("Error al guardar tu carrera");
+      console.error("❌ Error al actualizar career_interests:", err);
+      setError("Error al guardar tu preferencia de carrera");
       setLoading(false);
+      setShowCongratulations(false); // Cerrar el modal para mostrar el error
     }
   };
 
