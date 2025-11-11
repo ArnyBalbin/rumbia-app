@@ -72,6 +72,37 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('accessToken', data.access);
       localStorage.setItem('refreshToken', data.refresh);
 
+      try {
+        const userInfoResponse = await fetch(ENDPOINTS.GET_USER_INFO(data.user_code), {
+          headers: {
+            'Authorization': `Bearer ${data.access}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (userInfoResponse.ok) {
+          const fullUserData = await userInfoResponse.json();
+          
+          const userData = {
+            user_code: data.user_code,
+            email: fullUserData.email || data.email || email,
+            first_name: fullUserData.first_name || data.first_name || '',
+            last_name: fullUserData.last_name || data.last_name || '',
+            name: `${fullUserData.first_name || ''} ${fullUserData.last_name || ''}`.trim(),
+            tipo: data.tipo,
+            profile_picture: fullUserData.profile_picture || null
+          };
+
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          setUser(userData);
+          setIsAuthenticated(true);
+
+          return { success: true, data: userData };
+        }
+      } catch (err) {
+        console.error('Error obteniendo info completa:', err);
+      }
+
       const userData = {
         user_code: data.user_code,
         email: data.email || email,

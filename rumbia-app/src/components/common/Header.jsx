@@ -79,11 +79,65 @@ const Header = () => {
     }
   };
 
+  // Obtener el nombre completo del usuario
+  const getFullName = () => {
+    if (!user) return 'Usuario';
+    
+    const firstName = user.first_name || '';
+    const lastName = user.last_name || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    
+    // Si tiene nombre completo, retornarlo
+    if (fullName) return fullName;
+    
+    // Si no tiene nombre, mostrar email sin el dominio
+    if (user.email) {
+      return user.email.split('@')[0];
+    }
+    
+    return 'Usuario';
+  };
+
+  // Obtener las iniciales para el avatar
+  const getInitials = () => {
+    if (!user) return 'U';
+    
+    const firstName = user.first_name || '';
+    const lastName = user.last_name || '';
+    
+    // Si tiene ambos nombres, usar iniciales de ambos
+    if (firstName && lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    }
+    
+    // Si solo tiene primer nombre
+    if (firstName) {
+      return firstName.substring(0, 2).toUpperCase();
+    }
+    
+    // Si solo tiene apellido
+    if (lastName) {
+      return lastName.substring(0, 2).toUpperCase();
+    }
+    
+    // Si solo tiene email, usar primeras 2 letras
+    if (user.email) {
+      return user.email.substring(0, 2).toUpperCase();
+    }
+    
+    return 'U';
+  };
+
   // Componente para el avatar del usuario
   const UserAvatar = ({ size = "default" }) => {
     const sizeClasses = {
       default: "w-9 h-9",
       large: "w-12 h-12"
+    };
+
+    const textSizeClasses = {
+      default: "text-sm",
+      large: "text-lg"
     };
 
     return (
@@ -97,8 +151,8 @@ const Header = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className={size === "large" ? "text-lg" : ""}>
-              {user?.username?.charAt(0).toUpperCase()}
+            <span className={textSizeClasses[size]}>
+              {getInitials()}
             </span>
           )}
         </div>
@@ -157,8 +211,8 @@ const Header = () => {
                   >
                     <UserAvatar />
 
-                    <span className="font-semibold text-white text-sm max-w-[100px] truncate">
-                      {user?.username}
+                    <span className="font-semibold text-white text-sm max-w-[150px] truncate">
+                      {getFullName()}
                     </span>
 
                     <ChevronDown
@@ -279,9 +333,9 @@ const Header = () => {
                         <UserAvatar size="large" />
                         <div className="flex-1 min-w-0">
                           <p className="text-white font-bold text-sm truncate">
-                            {user?.username}
+                            {getFullName()}
                           </p>
-                          <p className="text-white/60 text-xs">
+                          <p className="text-white/60 text-xs truncate">
                             {user?.email || 'usuario@rumbia.com'}
                           </p>
                         </div>
