@@ -14,6 +14,7 @@ const CongratulationsModal = ({
   selectedCareer,
   careerOptions,
   userType,
+  loadingCareers,
 }) => {
   const [showCareerSelector, setShowCareerSelector] = useState(false);
 
@@ -79,34 +80,53 @@ const CongratulationsModal = ({
             </h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {careerOptions.map((career) => (
+          {loadingCareers ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="w-12 h-12 border-4 border-[#378BA4]/30 border-t-[#378BA4] rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-300 text-sm">Cargando carreras...</p>
+            </div>
+          ) : careerOptions.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-300 mb-4">No se pudieron cargar las carreras</p>
               <button
-                key={career}
-                onClick={() => handleSelectCareer(career)}
-                className={`p-4 bg-white/10 backdrop-blur-xl rounded-lg transition-all text-left font-medium text-sm ${
-                  selectedCareer === career
-                    ? "border-2 border-white bg-[#378BA4]/20"
-                    : "border-2 border-white/20 hover:border-white/50"
-                }`}
+                onClick={() => setShowCareerSelector(false)}
+                className="text-[#378BA4] hover:text-white transition-colors"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-white">{career}</span>
-                  {selectedCareer === career && (
-                    <Check className="w-4 h-4 text-white" />
-                  )}
-                </div>
+                Volver atrás
               </button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {careerOptions.map((career) => (
+                  <button
+                    key={career.id_career}
+                    onClick={() => handleSelectCareer(career)}
+                    className={`p-4 bg-white/10 backdrop-blur-xl rounded-lg transition-all text-left font-medium text-sm ${
+                      selectedCareer?.id_career === career.id_career
+                        ? "border-2 border-white bg-[#378BA4]/20"
+                        : "border-2 border-white/20 hover:border-white/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-white">{career.name}</span>
+                      {selectedCareer?.id_career === career.id_career && (
+                        <Check className="w-4 h-4 text-white flex-shrink-0" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
 
-          {selectedCareer && (
-            <button
-              onClick={() => onKnowCareer(selectedCareer)}
-              className="w-full py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/50 transition-all"
-            >
-              Confirmar carrera
-            </button>
+              {selectedCareer && (
+                <button
+                  onClick={() => onKnowCareer(selectedCareer.name)}
+                  className="w-full py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/50 transition-all"
+                >
+                  Confirmar carrera
+                </button>
+              )}
+            </>
           )}
 
           <div className="absolute -top-4 -right-4 w-6 h-6 bg-[#378BA4] rounded-full blur-md opacity-60"></div>
@@ -149,9 +169,17 @@ const CongratulationsModal = ({
         <div className="space-y-3">
           <button
             onClick={() => setShowCareerSelector(true)}
-            className="w-full py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/50 transition-all transform hover:scale-105"
+            disabled={loadingCareers}
+            className="w-full py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#378BA4]/50 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Ya sé que quiero estudiar
+            {loadingCareers ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Cargando...
+              </span>
+            ) : (
+              "Ya sé que quiero estudiar"
+            )}
           </button>
           <button
             onClick={onDontKnowCareer}
@@ -177,26 +205,14 @@ const RegisterForm = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [step, setStep] = useState(1);
   const [showCongratulations, setShowCongratulations] = useState(false);
-  const [selectedCareer, setSelectedCareer] = useState("");
-  const [registeredUserCode, setRegisteredUserCode] = useState("");
+  const [selectedCareer, setSelectedCareer] = useState(null);
+  
+  // Carreras desde API
+  const [careers, setCareers] = useState([]);
+  const [loadingCareers, setLoadingCareers] = useState(false);
 
   const navigate = useNavigate();
-  const { register, login, updateLearnerProfile } = useAuth();
-
-  const careerOptions = [
-    "Ingeniería de Sistemas",
-    "Medicina",
-    "Derecho",
-    "Administración",
-    "Psicología",
-    "Arquitectura",
-    "Contabilidad",
-    "Enfermería",
-    "Marketing",
-    "Diseño Gráfico",
-    "Educación",
-    "Gastronomía",
-  ];
+  const { register, login, updateLearnerProfile, getCareers } = useAuth();
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -213,6 +229,29 @@ const RegisterForm = () => {
     description: "",
     language: "Español",
   });
+
+  // Cargar carreras al montar el componente
+  useEffect(() => {
+    const fetchCareers = async () => {
+      setLoadingCareers(true);
+      try {
+        const result = await getCareers();
+        if (result.success) {
+          setCareers(result.data);
+        } else {
+          console.error('Error loading careers:', result.error);
+          setCareers([]);
+        }
+      } catch (err) {
+        console.error('Error fetching careers:', err);
+        setCareers([]);
+      } finally {
+        setLoadingCareers(false);
+      }
+    };
+
+    fetchCareers();
+  }, []);
 
   useEffect(() => {
     setIsVisible(true);
@@ -316,6 +355,7 @@ const RegisterForm = () => {
       }
 
       // 1. REGISTRAR usuario
+      console.log('📝 Registrando usuario con payload:', basePayload);
       const result = await register(basePayload);
 
       if (!result.success) {
@@ -349,14 +389,14 @@ const RegisterForm = () => {
     }
   };
 
-  const handleKnowCareer = async (career) => {
+  const handleKnowCareer = async (careerName) => {
     try {
       setLoading(true);
-      console.log('📚 Guardando career_interests:', career);
+      console.log('📚 Guardando career_interests:', careerName);
 
       // Actualizar el campo career_interests del modelo Learner
       const updateResult = await updateLearnerProfile({
-        career_interests: career,
+        career_interests: careerName,
       });
 
       if (!updateResult.success) {
@@ -370,7 +410,7 @@ const RegisterForm = () => {
       console.error("❌ Error al actualizar career_interests:", err);
       setError("Error al guardar tu preferencia de carrera");
       setLoading(false);
-      setShowCongratulations(false); // Cerrar el modal para mostrar el error
+      setShowCongratulations(false);
     }
   };
 
@@ -423,8 +463,9 @@ const RegisterForm = () => {
           onDontKnowCareer={handleDontKnowCareer}
           onSelectCareer={setSelectedCareer}
           selectedCareer={selectedCareer}
-          careerOptions={careerOptions}
+          careerOptions={careers}
           userType={formData.tipo}
+          loadingCareers={loadingCareers}
         />
       )}
 
@@ -548,12 +589,6 @@ const RegisterForm = () => {
           50% { transform: translateY(-20px) translateX(10px); }
         }
 
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-
         .animate-gradient-x {
           animation: gradient-x 3s ease infinite;
           background-size: 200% auto;
@@ -565,10 +600,6 @@ const RegisterForm = () => {
 
         .animate-float-reverse {
           animation: float 8s ease-in-out infinite reverse;
-        }
-
-        .animate-shake {
-          animation: shake 0.3s ease-in-out;
         }
 
         .custom-scrollbar {

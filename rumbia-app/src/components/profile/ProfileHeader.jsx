@@ -29,7 +29,7 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
       </div>
 
       <div className="text-center mb-4">
-        <h2 className="text-2xl font-bold text-white mb-1">
+        <h2 className="text-2xl font-bold text-white mb-2">
           {userData.first_name} {userData.last_name}
         </h2>
         <p className="text-gray-400 text-sm flex items-center justify-center gap-2">
