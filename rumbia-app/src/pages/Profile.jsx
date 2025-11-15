@@ -13,6 +13,7 @@ import ProfileLoading from "../components/profile/ProfileLoading";
 import EditLearnerModal from "../components/profile/EditLearnerModal";
 import BecomeAMentorModal from "../components/profile/BecomeAMentorModal";
 import ProfilePictureModal from "../components/profile/ProfilePictureModal";
+import SessionManagement from "../components/profile/SessionManagement";
 import { Edit2, Award } from "lucide-react";
 
 const Profile = () => {
@@ -197,17 +198,19 @@ const Profile = () => {
   // RENDER: Contenido de tabs
   // =============================================
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "overview":
-        return <ProfileOverview userData={userData} />;
-      case "activity":
-        return <ProfileActivity userData={userData} />;
-      case "settings":
-        return <ProfileSettings userData={userData} onRefresh={fetchUserData} />;
-      default:
-        return <ProfileOverview userData={userData} />;
-    }
-  };
+  switch (activeTab) {
+    case "overview":
+      return <ProfileOverview userData={userData} />;
+    case "activity":
+      return <ProfileActivity userData={userData} />;
+    case "sessions": // Nuevo tab para mentores
+      return <SessionManagement userData={userData} />;
+    case "settings":
+      return <ProfileSettings userData={userData} onRefresh={fetchUserData} />;
+    default:
+      return <ProfileOverview userData={userData} />;
+  }
+};
 
   // =============================================
   // ESTADOS DE CARGA Y ERROR

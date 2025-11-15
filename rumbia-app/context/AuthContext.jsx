@@ -367,39 +367,47 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getSessions = async (filters = {}) => {
-    try {
-      const params = new URLSearchParams();
+  try {
+    const params = new URLSearchParams();
 
-      if (filters.session_status)
-        params.append("session_status", filters.session_status);
-      if (filters.career_id) params.append("career_id", filters.career_id);
-      if (filters.category_id)
-        params.append("category_id", filters.category_id);
-      if (filters.start_date) params.append("start_date", filters.start_date);
-      if (filters.end_date) params.append("end_date", filters.end_date);
+    if (filters.session_status)
+      params.append("session_status", filters.session_status);
+    if (filters.career_id) params.append("career_id", filters.career_id);
+    if (filters.category_id)
+      params.append("category_id", filters.category_id);
+    if (filters.start_date) params.append("start_date", filters.start_date);
+    if (filters.end_date) params.append("end_date", filters.end_date);
 
-      const url = `${ENDPOINTS.GET_SESSIONS}${
-        params.toString() ? "?" + params.toString() : ""
-      }`;
+    const url = `${ENDPOINTS.GET_SESSIONS}${
+      params.toString() ? "?" + params.toString() : ""
+    }`;
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error("Error al obtener sesiones");
-      }
-
-      const data = await response.json();
-      return { success: true, data };
-    } catch (error) {
-      console.error("Error getting sessions:", error);
-      return { success: false, error: error.message };
+    if (!response.ok) {
+      throw new Error("Error al obtener sesiones");
     }
-  };
+
+    const data = await response.json();
+    
+    // El API devuelve { count, filters_applied, results }
+    // Devolvemos los results directamente
+    return { 
+      success: true, 
+      data: data.results || data, // Si tiene results, lo usa, sino usa data directamente
+      count: data.count,
+      filters: data.filters_applied
+    };
+  } catch (error) {
+    console.error("Error getting sessions:", error);
+    return { success: false, error: error.message };
+  }
+};
 
   const getCareers = async () => {
     try {
@@ -458,7 +466,7 @@ export const AuthProvider = ({ children }) => {
     updateMentorProfile,
     createSession,
     getSessions,
-    getCareers, // ← NUEVO
+    getCareers,
     getCategories,
   };
 

@@ -1,15 +1,16 @@
-import { User, TrendingUp, Settings } from "lucide-react";
+import { User, TrendingUp, Settings, Calendar } from "lucide-react";
 
-const ProfileTabs = ({ activeTab, onTabChange }) => {
+const ProfileTabs = ({ activeTab, onTabChange, isMentor }) => {
   const tabs = [
     { id: "overview", label: "Vista General", icon: User },
     { id: "activity", label: "Actividad", icon: TrendingUp },
+    ...(isMentor ? [{ id: "sessions", label: "Sesiones", icon: Calendar }] : []),
     { id: "settings", label: "Configuración", icon: Settings },
   ];
 
   return (
     <div className="border-b border-[#378BA4]/30">
-      <div className="flex overflow-x-auto">
+      <div className="flex overflow-x-auto scrollbar-hide">
         {tabs.map((tab) => (
           <button
             key={tab.id}
