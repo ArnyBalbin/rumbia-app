@@ -2,7 +2,7 @@ import { User, TrendingUp, Settings, Calendar } from "lucide-react";
 
 const ProfileTabs = ({ activeTab, onTabChange, isMentor }) => {
   const tabs = [
-    { id: "overview", label: "Vista General", icon: User },
+    { id: "overview", label: "General", icon: User },
     { id: "activity", label: "Actividad", icon: TrendingUp },
     ...(isMentor ? [{ id: "sessions", label: "Sesiones", icon: Calendar }] : []),
     { id: "settings", label: "Configuración", icon: Settings },

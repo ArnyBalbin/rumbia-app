@@ -366,6 +366,40 @@
       }
     };
 
+    const updateSession = async (sessionCode, updateData) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("currentUser"));
+      const userCode = userData?.user_code;
+
+      if (!userCode) {
+        throw new Error("No se encontró el user_code");
+      }
+
+      // Nota: Necesitarás agregar este endpoint en tu config/api.js
+      const response = await fetch(ENDPOINTS.UPDATE_SESSION(sessionCode), {
+        method: "PATCH", // o "PUT" dependiendo de tu API
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_code: userCode,
+          ...updateData,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al actualizar sesión");
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error updating session:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
     const getSessions = async (filters = {}) => {
     try {
       const params = new URLSearchParams();
@@ -468,6 +502,7 @@
       getSessions,
       getCareers,
       getCategories,
+      updateSession,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

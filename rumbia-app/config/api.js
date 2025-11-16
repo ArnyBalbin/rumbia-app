@@ -17,8 +17,9 @@ export const ENDPOINTS = {
 
   // 🗓️ Sesiones
   CREATE_SESSION: `${API_BASE_URL}/create-session/`,    // POST → Crear una nueva sesión
+  UPDATE_SESSION: (sessionCode) => `${API_BASE_URL}/update-session/${sessionCode}/`, // PATCH/PUT → Actualizar sesión existente
   GET_SESSIONS: `${API_BASE_URL}/get-sessions/`,        // GET → Listar sesiones activas con filtros dinámicos
-
+  
   // 🎓 Datos de referencia
   GET_CAREERS: `${API_BASE_URL}/get-careers/`,          // GET → Listar carreras disponibles
   GET_CATEGORIES: `${API_BASE_URL}/get-categories/`,    // GET → Listar categorías de carreras
