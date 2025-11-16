@@ -17,7 +17,7 @@ import SessionManagement from "../components/profile/SessionManagement";
 import { Edit2, Award } from "lucide-react";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, uploadMentorImage } = useAuth();
   const [userData, setUserData] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
@@ -73,6 +73,8 @@ const Profile = () => {
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
+        mentor: data.mentor,
+        learner: data.learner,
       }));
 
     } catch (err) {
@@ -158,12 +160,31 @@ const Profile = () => {
   };
 
   // =============================================
-  // HANDLE: Subir foto de perfil
+  // HANDLE: Subir foto de perfil (MEJORADO)
   // =============================================
   const handleSaveProfilePicture = async (file) => {
     try {
+      // Verificar que el usuario es mentor
+      if (!userData?.mentor?.is_mentor) {
+        throw new Error("Solo los mentores pueden subir foto de perfil");
+      }
+
+      // Validaciones del archivo
+      if (!file) {
+        throw new Error("No se seleccionó ninguna imagen");
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("La imagen no debe superar los 5MB");
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error("Solo se permiten archivos JPG, JPEG o PNG");
+      }
+
       const token = localStorage.getItem("accessToken");
-      if (!token || !userData?.user_code) {
+      if (!token) {
         throw new Error("No autorizado");
       }
 
@@ -171,7 +192,7 @@ const Profile = () => {
       formData.append("user_code", userData.user_code);
       formData.append("profile_img", file);
 
-      const response = await fetch(ENDPOINTS.UPLOAD_MENTOR_IMAGE, {
+      const response = await fetch(ENDPOINTS.POST_MENTOR_IMAGE, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -184,10 +205,21 @@ const Profile = () => {
         throw new Error(errorData.error || "Error al subir imagen");
       }
 
-      // Refrescar datos
+      const result = await response.json();
+
+      // Actualizar userData inmediatamente con la nueva imagen
+      setUserData(prev => ({
+        ...prev,
+        mentor: {
+          ...prev.mentor,
+          profile_img: result.path
+        }
+      }));
+
+      // Refrescar datos completos desde el servidor
       await fetchUserData();
       
-      return { success: true };
+      return { success: true, message: "Foto de perfil actualizada correctamente" };
     } catch (error) {
       console.error("Error al subir foto:", error);
       throw error;
@@ -198,19 +230,19 @@ const Profile = () => {
   // RENDER: Contenido de tabs
   // =============================================
   const renderTabContent = () => {
-  switch (activeTab) {
-    case "overview":
-      return <ProfileOverview userData={userData} />;
-    case "activity":
-      return <ProfileActivity userData={userData} />;
-    case "sessions": // Nuevo tab para mentores
-      return <SessionManagement userData={userData} />;
-    case "settings":
-      return <ProfileSettings userData={userData} onRefresh={fetchUserData} />;
-    default:
-      return <ProfileOverview userData={userData} />;
-  }
-};
+    switch (activeTab) {
+      case "overview":
+        return <ProfileOverview userData={userData} />;
+      case "activity":
+        return <ProfileActivity userData={userData} />;
+      case "sessions":
+        return <SessionManagement userData={userData} />;
+      case "settings":
+        return <ProfileSettings userData={userData} onRefresh={fetchUserData} />;
+      default:
+        return <ProfileOverview userData={userData} />;
+    }
+  };
 
   // =============================================
   // ESTADOS DE CARGA Y ERROR
@@ -256,7 +288,10 @@ const Profile = () => {
         isOpen={showPictureModal}
         onClose={() => setShowPictureModal(false)}
         onSave={handleSaveProfilePicture}
-        currentImage={userData.mentor?.profile_img}
+        currentImage={userData.mentor?.profile_img 
+          ? `https://api-rumbia.onrender.com/media/${userData.mentor.profile_img}`
+          : null
+        }
       />
       
       <EditLearnerModal
@@ -280,7 +315,7 @@ const Profile = () => {
 
       {/* ========== MAIN CONTENT ========== */}
       <main className="flex-grow relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-5 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* ========== SIDEBAR ========== */}

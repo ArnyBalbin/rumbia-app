@@ -4,15 +4,31 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
   const hasLearner = userData.learner && userData.learner.is_learner;
   const hasMentor = userData.mentor && userData.mentor.is_mentor;
 
+  // Construir URL completa de la imagen del mentor
+  const mentorImageUrl = userData.mentor?.profile_img 
+    ? `https://api-rumbia.onrender.com/media/${userData.mentor.profile_img}`
+    : null;
+
   return (
     <div className="bg-[#012E4A]/80 backdrop-blur-xl rounded-xl border border-[#378BA4]/30 p-6 shadow-xl">
       <div className="relative w-32 h-32 mx-auto mb-4">
         <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#378BA4]/50 bg-[#036280]/20">
-          {userData.profile_picture ? (
+          {mentorImageUrl ? (
             <img
-              src={userData.profile_picture}
-              alt="Profile"
+              src={mentorImageUrl}
+              alt={`${userData.first_name} ${userData.last_name}`}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // Si la imagen falla al cargar, mostrar el icono por defecto
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = `
+                  <div class="w-full h-full flex items-center justify-center">
+                    <svg class="w-16 h-16 text-[#378BA4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                  </div>
+                `;
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -20,12 +36,17 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
             </div>
           )}
         </div>
-        <button
-          onClick={onEditPicture}
-          className="absolute bottom-0 right-0 p-2 bg-[#378BA4] rounded-full border-2 border-[#012E4A] hover:bg-[#036280] transition-all"
-        >
-          <Camera className="w-4 h-4 text-white" />
-        </button>
+        
+        {/* Botón de cámara solo visible para mentores */}
+        {hasMentor && (
+          <button
+            onClick={onEditPicture}
+            className="absolute bottom-0 right-0 p-2 bg-[#378BA4] rounded-full border-2 border-[#012E4A] hover:bg-[#036280] transition-all shadow-lg hover:shadow-xl"
+            title="Cambiar foto de perfil"
+          >
+            <Camera className="w-4 h-4 text-white" />
+          </button>
+        )}
       </div>
 
       <div className="text-center mb-4">
