@@ -4,9 +4,8 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
   const hasLearner = userData.learner && userData.learner.is_learner;
   const hasMentor = userData.mentor && userData.mentor.is_mentor;
 
-  // Construir URL completa de la imagen del mentor
   const mentorImageUrl = userData.mentor?.profile_img 
-    ? `https://api-rumbia.onrender.com/media/${userData.mentor.profile_img}`
+    ? `https://api-rumbia.onrender.com${userData.mentor.profile_img}`
     : null;
 
   return (
