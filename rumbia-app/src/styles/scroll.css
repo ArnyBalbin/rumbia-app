@@ -1,14 +1,53 @@
-/* Bloquea el scroll completamente */
-.no-scroll {
-  overflow: hidden !important;
+/* Ocultar scrollbar SOLO en páginas específicas */
+
+/* Agrega la clase 'hide-scrollbar' al elemento principal de las páginas donde quieras ocultar el scroll */
+
+/* Para Chrome, Safari y navegadores basados en Webkit */
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
 }
 
-/* Oculta la barra de scroll pero deja el desplazamiento funcional */
-.scrollbar-hide {
-  -ms-overflow-style: none;
+.hide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Para Firefox */
+.hide-scrollbar {
   scrollbar-width: none;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* Para IE y Edge (versiones antiguas) */
+.hide-scrollbar {
+  -ms-overflow-style: none;
 }
+
+/* Asegurar que el scroll funcione normalmente */
+.hide-scrollbar {
+  overflow-x: hidden; /* Evitar scroll horizontal */
+  overflow-y: auto; /* Permitir scroll vertical */
+}
+
+/* Si quieres mostrar el scrollbar solo al hacer hover (opcional) */
+/*
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(55, 139, 164, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(55, 139, 164, 0.6);
+}
+*/
