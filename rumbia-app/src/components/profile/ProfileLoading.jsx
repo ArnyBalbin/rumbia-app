@@ -1,7 +1,7 @@
 const ProfileLoading = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#012E4A] via-[#036280] to-[#012E4A] flex items-center justify-center">
-      <div className="max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container w-full px-4 sm:px-6 lg:px-5 py-7">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Sidebar Skeleton */}

@@ -1,38 +1,26 @@
 import { useState, useEffect } from "react";
 import {
   Plus,
-  X,
   Calendar,
   Clock,
-  Users,
   MapPin,
   TrendingUp,
   AlertCircle,
-  BookOpen,
   DollarSign,
-  ChevronDown,
   ChevronUp,
   RefreshCw,
   Video,
   Upload,
-  Link as LinkIcon,
+  LinkIcon,
   ExternalLink,
   CheckCircle,
 } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 
 const SessionManagement = ({ userData }) => {
-  const {
-    createSession,
-    updateSession,
-    getSessions,
-    getCareers,
-    getCategories,
-  } = useAuth();
+  const { createSession, updateSession, getSessions } = useAuth();
 
   const [sessions, setSessions] = useState([]);
-  const [careers, setCareers] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const blockCreation = true;
@@ -42,7 +30,6 @@ const SessionManagement = ({ userData }) => {
   const [formData, setFormData] = useState({
     topic: "",
     session_notes: "",
-    career_id: "",
     schedule_date: "",
     duration_minutes: 60,
     meeting_platform: "Zoom",
@@ -53,8 +40,8 @@ const SessionManagement = ({ userData }) => {
   const [submitting, setSubmitting] = useState(false);
 
   // Recording upload state
-  const [uploadingRecording, setUploadingRecording] = useState({});
-  const [recordingUrls, setRecordingUrls] = useState({});
+  const [uploadingRecording, setUploadingRecording] = useState(null);
+  const [recordingUrl, setRecordingUrl] = useState("");
   const [recordingError, setRecordingError] = useState("");
 
   useEffect(() => {
@@ -68,11 +55,7 @@ const SessionManagement = ({ userData }) => {
       setLoading(true);
       setError(null);
 
-      const [sessionsRes, careersRes, categoriesRes] = await Promise.all([
-        getSessions(),
-        getCareers(),
-        getCategories(),
-      ]);
+      const sessionsRes = await getSessions();
 
       if (sessionsRes.success) {
         const responseData = sessionsRes.data;
@@ -90,16 +73,8 @@ const SessionManagement = ({ userData }) => {
         );
 
         setSessions(userSessions);
-        console.log("Sesiones cargadas:", userSessions);
       } else {
         setSessions([]);
-      }
-
-      if (careersRes.success) {
-        setCareers(careersRes.data);
-      }
-      if (categoriesRes.success) {
-        setCategories(categoriesRes.data);
       }
     } catch (err) {
       console.error("Error loading data:", err);
@@ -119,10 +94,6 @@ const SessionManagement = ({ userData }) => {
   const validateForm = () => {
     if (!formData.topic.trim()) {
       setFormError("El tema es obligatorio");
-      return false;
-    }
-    if (!formData.career_id) {
-      setFormError("Debes seleccionar una carrera");
       return false;
     }
     if (!formData.schedule_date) {
@@ -197,37 +168,32 @@ const SessionManagement = ({ userData }) => {
   };
 
   const handleUploadRecording = async (sessionCode) => {
-    const url = recordingUrls[sessionCode];
-
-    if (!url || !url.trim()) {
+    if (!recordingUrl || !recordingUrl.trim()) {
       setRecordingError("Por favor ingresa la URL de la grabación");
       return;
     }
 
     try {
-      new URL(url);
+      new URL(recordingUrl);
     } catch {
       setRecordingError("Por favor ingresa una URL válida");
       return;
     }
 
-    setUploadingRecording((prev) => ({ ...prev, [sessionCode]: true }));
+    setUploadingRecording(sessionCode);
     setRecordingError("");
 
     try {
-      const result = await updateSession(sessionCode, { recording_url: url });
+      const result = await updateSession(sessionCode, { recording_url: recordingUrl });
 
       if (result.success) {
         setSessions((prev) =>
           prev.map((s) =>
-            s.session_code === sessionCode ? { ...s, recording_url: url } : s
+            s.session_code === sessionCode ? { ...s, recording_url: recordingUrl } : s
           )
         );
-        setRecordingUrls((prev) => {
-          const newUrls = { ...prev };
-          delete newUrls[sessionCode];
-          return newUrls;
-        });
+        setRecordingUrl("");
+        setUploadingRecording(null);
       } else {
         setRecordingError(result.error || "Error al subir la grabación");
       }
@@ -235,7 +201,7 @@ const SessionManagement = ({ userData }) => {
       setRecordingError("Error al subir la grabación");
       console.error(err);
     } finally {
-      setUploadingRecording((prev) => ({ ...prev, [sessionCode]: false }));
+      setUploadingRecording(null);
     }
   };
 
@@ -243,7 +209,6 @@ const SessionManagement = ({ userData }) => {
     setFormData({
       topic: "",
       session_notes: "",
-      career_id: "",
       schedule_date: "",
       duration_minutes: 60,
       meeting_platform: "Zoom",
@@ -253,25 +218,12 @@ const SessionManagement = ({ userData }) => {
     setFormError("");
   };
 
-  const getCareerName = (careerId) => {
-    const career = careers.find((c) => c.id_career === parseInt(careerId));
-    return career ? career.name_career : "Sin carrera";
-  };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("es-PE", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    });
-  };
-
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("es-PE", {
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
@@ -406,25 +358,6 @@ const SessionManagement = ({ userData }) => {
                 rows="3"
                 className="w-full bg-[#012E4A]/50 border border-[#378BA4]/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none resize-none transition-all"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-white mb-2">
-                Carrera *
-              </label>
-              <select
-                name="career_id"
-                value={formData.career_id}
-                onChange={handleInputChange}
-                className="w-full bg-[#012E4A]/50 border border-[#378BA4]/30 rounded-lg px-4 py-3 text-white focus:border-[#378BA4] focus:outline-none transition-all"
-              >
-                <option value="">Seleccionar carrera</option>
-                {careers.map((career) => (
-                  <option key={career.id_career} value={career.id_career}>
-                    {career.name_career}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -611,21 +544,6 @@ const SessionManagement = ({ userData }) => {
 
                   {/* Details */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-[#378BA4]/20">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-[#378BA4]/20 rounded-lg">
-                        <BookOpen className="w-4 h-4 text-[#378BA4]" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Carrera</p>
-                        <p className="text-sm font-semibold text-white truncate">
-                          {getCareerName(
-                            session.career_id ||
-                              session.mentor?.career?.id_career
-                          )}
-                        </p>
-                      </div>
-                    </div>
-
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-[#378BA4]/20 rounded-lg">
                         <Calendar className="w-4 h-4 text-[#378BA4]" />
