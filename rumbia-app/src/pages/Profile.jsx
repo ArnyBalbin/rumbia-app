@@ -289,7 +289,7 @@ const Profile = () => {
         onClose={() => setShowPictureModal(false)}
         onSave={handleSaveProfilePicture}
         currentImage={userData.mentor?.profile_img 
-          ? `https://api-rumbia.onrender.com/media/${userData.mentor.profile_img}`
+          ? `https://api-rumbia.onrender.com${userData.mentor.profile_img}`
           : null
         }
       />
