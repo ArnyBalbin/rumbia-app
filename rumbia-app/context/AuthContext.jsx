@@ -286,7 +286,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.error || "Error al convertir a mentor");
       }
 
-      // Actualizar el tipo de usuario en localStorage
       const updatedUser = { ...userData, tipo: "mentor" };
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -366,33 +365,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateSession = async (sessionCode, updateData) => {
+  const updateSession = async (sessionUuid, updateData) => {
     try {
-      const userData = JSON.parse(localStorage.getItem("currentUser"));
-      const userCode = userData?.user_code;
+      const token = localStorage.getItem("accessToken");
 
-      if (!userCode) {
-        throw new Error("No se encontró el user_code");
-      }
-
-      // Nota: Necesitarás agregar este endpoint en tu config/api.js
-      const response = await fetch(ENDPOINTS.UPDATE_SESSION(sessionCode), {
-        method: "PATCH", // o "PUT" dependiendo de tu API
+      const response = await fetch(ENDPOINTS.UPDATE_SESSION(sessionUuid), {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          user_code: userCode,
-          ...updateData,
-        }),
+        body: JSON.stringify(updateData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Error al actualizar sesión");
-      }
-
       const data = await response.json();
+
+      if (!response.ok)
+        throw new Error(data.error || "Error al actualizar sesión");
+
       return { success: true, data };
     } catch (error) {
       console.error("Error updating session:", error);
@@ -429,11 +419,9 @@ export const AuthProvider = ({ children }) => {
 
       const data = await response.json();
 
-      // El API devuelve { count, filters_applied, results }
-      // Devolvemos los results directamente
       return {
         success: true,
-        data: data.results || data, // Si tiene results, lo usa, sino usa data directamente
+        data: data.results || data,
         count: data.count,
         filters: data.filters_applied,
       };
@@ -494,7 +482,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error("No se encontró el user_code");
       }
 
-      // Validaciones del archivo
       if (!imageFile) {
         throw new Error("No se seleccionó ninguna imagen");
       }
@@ -508,7 +495,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Solo se permiten archivos JPG, JPEG o PNG");
       }
 
-      // Crear FormData
       const formData = new FormData();
       formData.append("user_code", userCode);
       formData.append("profile_img", imageFile);
@@ -516,7 +502,6 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch(ENDPOINTS.POST_MENTOR_IMAGE, {
         method: "POST",
         body: formData,
-        // NO incluir Content-Type header, FormData lo maneja automáticamente
       });
 
       if (!response.ok) {
@@ -526,7 +511,6 @@ export const AuthProvider = ({ children }) => {
 
       const data = await response.json();
 
-      // Actualizar el usuario en el estado y localStorage
       const updatedUser = {
         ...userData,
         mentor: {
@@ -541,6 +525,55 @@ export const AuthProvider = ({ children }) => {
       return { success: true, data };
     } catch (error) {
       console.error("Error uploading mentor image:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getSessionInfo = async (sessionCode) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      const response = await fetch(ENDPOINTS.GET_SESSION_INFO(sessionCode), {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al obtener info de la sesión");
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error getSessionInfo:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const inscribeLearner = async (sessionCode) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      const token = localStorage.getItem("accessToken");
+
+      const response = await fetch(ENDPOINTS.INSCRIBE_LEARNER, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_code: user.user_code,
+          uuid: sessionCode,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || "Error al inscribirse");
+
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error inscribeLearner:", error);
       return { success: false, error: error.message };
     }
   };
@@ -564,6 +597,8 @@ export const AuthProvider = ({ children }) => {
     getCategories,
     updateSession,
     uploadMentorImage,
+    getSessionInfo,
+    inscribeLearner,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
