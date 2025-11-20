@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyToken = async (token) => {
+  const verifyToken = async () => {
     try {
       const userData = JSON.parse(localStorage.getItem("currentUser"));
       const userCode = userData?.user_code;
@@ -41,17 +41,20 @@ export const AuthProvider = ({ children }) => {
 
       const response = await fetch(ENDPOINTS.GET_USER_INFO(userCode), {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
       });
 
       if (!response.ok) {
-        throw new Error("Token inválido");
+        throw new Error("Sesión inválida o expirada");
       }
     } catch (error) {
       console.error("Error verifying token:", error);
-      logout();
+      const refreshed = await refreshToken();
+      if (!refreshed) {
+        logout();
+      }
     }
   };
 
@@ -61,6 +64,7 @@ export const AuthProvider = ({ children }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -70,60 +74,52 @@ export const AuthProvider = ({ children }) => {
           data.detail || data.message || "Error al iniciar sesión"
         );
       }
-
-      localStorage.setItem("accessToken", data.access);
-      localStorage.setItem("refreshToken", data.refresh);
-
       try {
         const userInfoResponse = await fetch(
           ENDPOINTS.GET_USER_INFO(data.user_code),
           {
             headers: {
-              Authorization: `Bearer ${data.access}`,
               "Content-Type": "application/json",
             },
+            credentials: "include",
           }
         );
 
         if (userInfoResponse.ok) {
           const fullUserData = await userInfoResponse.json();
+          let profilePic = null;
+          if (fullUserData.mentor && fullUserData.mentor.profile_img) {
+            profilePic = fullUserData.mentor.profile_img;
+          }
 
           const userData = {
             user_code: data.user_code,
             email: fullUserData.email || data.email || email,
-            first_name: fullUserData.first_name || data.first_name || "",
-            last_name: fullUserData.last_name || data.last_name || "",
+            first_name: fullUserData.first_name || "",
+            last_name: fullUserData.last_name || "",
             name: `${fullUserData.first_name || ""} ${
               fullUserData.last_name || ""
             }`.trim(),
             tipo: data.tipo,
-            profile_picture: fullUserData.profile_picture || null,
+            profile_picture: profilePic,
+            mentor: fullUserData.mentor,
+            learner: fullUserData.learner,
           };
 
           localStorage.setItem("currentUser", JSON.stringify(userData));
           setUser(userData);
           setIsAuthenticated(true);
-
           return { success: true, data: userData };
         }
       } catch (err) {
         console.error("Error obteniendo info completa:", err);
       }
 
-      const userData = {
-        user_code: data.user_code,
-        email: data.email || email,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
-        tipo: data.tipo,
-      };
-
-      localStorage.setItem("currentUser", JSON.stringify(userData));
-      setUser(userData);
+      const basicUser = { ...data, email };
+      localStorage.setItem("currentUser", JSON.stringify(basicUser));
+      setUser(basicUser);
       setIsAuthenticated(true);
-
-      return { success: true, data: userData };
+      return { success: true, data: basicUser };
     } catch (error) {
       console.error("Error en login:", error);
       return { success: false, error: error.message };
@@ -192,39 +188,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
     localStorage.removeItem("currentUser");
     setUser(null);
     setIsAuthenticated(false);
+    window.location.href = "/login";
   };
 
   const refreshToken = async () => {
     try {
-      const refresh = localStorage.getItem("refreshToken");
-
-      if (!refresh) {
-        throw new Error("No refresh token");
-      }
-
       const response = await fetch(ENDPOINTS.REFRESH, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
+        credentials: "include",
       });
-
-      const data = await response.json();
 
       if (!response.ok) {
         throw new Error("Failed to refresh token");
       }
 
-      localStorage.setItem("accessToken", data.access);
-      return data.access;
+      return true;
     } catch (error) {
       console.error("Error refreshing token:", error);
       logout();
-      return null;
+      return false;
     }
   };
 
