@@ -251,7 +251,7 @@ const RegisterForm = () => {
     };
 
     fetchCareers();
-  }, []);
+  }, [getCareers]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -354,8 +354,7 @@ const RegisterForm = () => {
         }
       }
 
-      // 1. REGISTRAR usuario
-      console.log('📝 Registrando usuario con payload:', basePayload);
+      console.log('🔹 Registrando usuario...');
       const result = await register(basePayload);
 
       if (!result.success) {
@@ -366,8 +365,7 @@ const RegisterForm = () => {
         throw new Error("No se recibió user_code del servidor");
       }
 
-      // 2. LOGIN AUTOMÁTICO con las credenciales
-      console.log('🔐 Iniciando login automático...');
+      console.log('🔹 Iniciando login automático...');
       const loginResult = await login(formData.email, formData.password);
 
       if (!loginResult.success) {
@@ -375,10 +373,9 @@ const RegisterForm = () => {
         throw new Error(`Error al iniciar sesión: ${loginResult.error}`);
       }
 
-      console.log('✅ Login exitoso:', loginResult.data);
+      console.log('✅ Login exitoso, usuario autenticado');
       setLoading(false);
-      
-      // 3. MOSTRAR MODAL según tipo de usuario
+
       setShowCongratulations(true);
 
     } catch (err) {
@@ -394,7 +391,6 @@ const RegisterForm = () => {
       setLoading(true);
       console.log('📚 Guardando career_interests:', careerName);
 
-      // Actualizar el campo career_interests del modelo Learner
       const updateResult = await updateLearnerProfile({
         career_interests: careerName,
       });

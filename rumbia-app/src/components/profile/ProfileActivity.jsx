@@ -24,22 +24,21 @@ const ProfileActivity = ({ userData }) => {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("No autorizado");
-      }
-
+      // ELIMINADO: const token = localStorage.getItem("accessToken");
+      
       const response = await fetch(ENDPOINTS.GET_SESSIONS, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          // ELIMINADO: Authorization header
         },
+        credentials: "include", // <--- AGREGADO
       });
 
       if (!response.ok) {
         throw new Error("Error al cargar la actividad");
       }
-
+      
+      // ... El resto de la lógica se mantiene igual (procesar datos) ...
       const data = await response.json();
       const allSessions = Array.isArray(data.results) 
         ? data.results 

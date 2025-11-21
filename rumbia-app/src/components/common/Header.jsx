@@ -13,13 +13,11 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import { ENDPOINTS } from '../../../config/api';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [profilePicture, setProfilePicture] = useState(null);
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,32 +30,6 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Fetch profile picture cuando el usuario esté autenticado
-  useEffect(() => {
-    const fetchProfilePicture = async () => {
-      if (!isAuthenticated || !user?.user_code) return;
-
-      try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(ENDPOINTS.GET_USER_INFO(user.user_code), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setProfilePicture(userData.profile_picture);
-        }
-      } catch (error) {
-        console.error('Error al obtener foto de perfil:', error);
-      }
-    };
-
-    fetchProfilePicture();
-  }, [isAuthenticated, user]);
 
   const handleLogout = () => {
     logout();
@@ -140,6 +112,10 @@ const Header = () => {
       large: "text-lg"
     };
 
+    const profilePicture = user?.mentor?.profile_img 
+      ? `http://127.0.0.1:8000${user.mentor.profile_img}`
+      : null;
+
     return (
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-[#378BA4] to-[#036280] rounded-full blur-sm opacity-50"></div>
@@ -149,6 +125,11 @@ const Header = () => {
               src={profilePicture} 
               alt="Profile" 
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // Si la imagen falla al cargar, mostrar las iniciales
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = `<span class="${textSizeClasses[size]}">${getInitials()}</span>`;
+              }}
             />
           ) : (
             <span className={textSizeClasses[size]}>

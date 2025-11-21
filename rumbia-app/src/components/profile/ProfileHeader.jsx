@@ -5,7 +5,7 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
   const hasMentor = userData.mentor && userData.mentor.is_mentor;
 
   const mentorImageUrl = userData.mentor?.profile_img 
-    ? `https://api-rumbia.onrender.com${userData.mentor.profile_img}`
+    ? `http://127.0.0.1:8000${userData.mentor.profile_img}`
     : null;
 
   return (

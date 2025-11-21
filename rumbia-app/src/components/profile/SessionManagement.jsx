@@ -167,7 +167,7 @@ const SessionManagement = ({ userData }) => {
     }
   };
 
-  const handleUploadRecording = async (sessionCode) => {
+  const handleUploadRecording = async (sessionUuid) => {
     if (!recordingUrl || !recordingUrl.trim()) {
       setRecordingError("Por favor ingresa la URL de la grabación");
       return;
@@ -180,16 +180,16 @@ const SessionManagement = ({ userData }) => {
       return;
     }
 
-    setUploadingRecording(sessionCode);
+    setUploadingRecording(sessionUuid);
     setRecordingError("");
 
     try {
-      const result = await updateSession(sessionCode, { recording_url: recordingUrl });
+      const result = await updateSession(sessionUuid, { recording_url: recordingUrl });
 
       if (result.success) {
         setSessions((prev) =>
           prev.map((s) =>
-            s.session_code === sessionCode ? { ...s, recording_url: recordingUrl } : s
+            s.uuid === sessionUuid ? { ...s, recording_url: recordingUrl } : s
           )
         );
         setRecordingUrl("");
@@ -301,7 +301,7 @@ const SessionManagement = ({ userData }) => {
               <div className="flex flex-wrap gap-2">
                 {pendingRecordings.map((s) => (
                   <span
-                    key={s.session_code}
+                    key={s.uuid}
                     className="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-sm border border-amber-500/30"
                   >
                     {s.topic}
@@ -510,7 +510,7 @@ const SessionManagement = ({ userData }) => {
 
               return (
                 <div
-                  key={session.session_code || session.id}
+                  key={session.uuid}
                   className={`bg-[#036280]/30 backdrop-blur-sm rounded-xl border ${
                     needsRecording
                       ? "border-amber-500/50"
@@ -653,7 +653,7 @@ const SessionManagement = ({ userData }) => {
 
                           <div className="space-y-3">
                             {recordingError &&
-                              uploadingRecording === session.session_code && (
+                              uploadingRecording === session.uuid && (
                                 <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg text-xs flex items-center gap-2">
                                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                                   {recordingError}
@@ -665,7 +665,7 @@ const SessionManagement = ({ userData }) => {
                                 type="url"
                                 placeholder="https://drive.google.com/... o https://youtube.com/..."
                                 value={
-                                  uploadingRecording === session.session_code
+                                  uploadingRecording === session.uuid
                                     ? recordingUrl
                                     : ""
                                 }
@@ -674,16 +674,16 @@ const SessionManagement = ({ userData }) => {
                                   setRecordingError("");
                                 }}
                                 onFocus={() =>
-                                  setUploadingRecording(session.session_code)
+                                  setUploadingRecording(session.uuid)
                                 }
                                 className="flex-1 bg-[#012E4A]/50 border border-amber-500/30 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none text-sm transition-all"
                               />
                               <button
                                 onClick={() =>
-                                  handleUploadRecording(session.session_code)
+                                  handleUploadRecording(session.uuid)
                                 }
                                 disabled={
-                                  uploadingRecording === session.session_code &&
+                                  uploadingRecording === session.uuid &&
                                   !recordingUrl.trim()
                                 }
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg transition-all shadow-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm"

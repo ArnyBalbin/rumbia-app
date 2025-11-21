@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://api-rumbia.onrender.com/api';
+export const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 export const ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/register/`,
@@ -6,7 +6,7 @@ export const ENDPOINTS = {
   REFRESH: `${API_BASE_URL}/refresh/`,
   GET_USER_INFO: (pk) => `${API_BASE_URL}/get-user-info/${pk}/`,
   GET_SESSION_INFO: (pk) => `${API_BASE_URL}/get-session-info/${pk}/`,
-  UPDATE_SESSION: (pk) => `${API_BASE_URL}/update-session/${pk}/`,
+  UPDATE_SESSION: `${API_BASE_URL}/update-session/`,
   INSCRIBE_LEARNER: `${API_BASE_URL}/inscribe-learner/`,
   LEARNER_TO_MENTOR: `${API_BASE_URL}/learner-to-mentor/`,
   POST_LEARNER: `${API_BASE_URL}/post-learner/`,
