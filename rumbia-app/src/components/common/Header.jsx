@@ -113,7 +113,7 @@ const Header = () => {
     };
 
     const profilePicture = user?.mentor?.profile_img 
-      ? `http://127.0.0.1:8000${user.mentor.profile_img}`
+      ? `https://api-rumbia.onrender.com${user.mentor.profile_img}`
       : null;
 
     return (
