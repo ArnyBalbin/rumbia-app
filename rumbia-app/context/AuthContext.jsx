@@ -158,7 +158,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("currentUser");
     setUser(null);
     setIsAuthenticated(false);
-    window.location.href = "/login";
   };
 
   const refreshToken = async () => {
