@@ -1,8 +1,39 @@
 import { useState, useEffect } from "react";
-import { X, Save, Plus } from "lucide-react";
+import { X, Save, Plus, Check } from "lucide-react";
+
+// --- CONSTANTES Y DATOS (CONTEXTO PERÚ) ---
+
+const NIVELES_EDUCATIVOS = [
+  { value: "primaria", label: "Primaria" },
+  { value: "secundaria", label: "Secundaria" },
+  { value: "pre_universitario", label: "Pre-Universitario / Academia" },
+  { value: "universidad", label: "Superior (Universidad/Instituto)" },
+];
+
+const GRADOS_POR_NIVEL = {
+  primaria: ["1° Grado", "2° Grado", "3° Grado", "4° Grado", "5° Grado", "6° Grado"],
+  secundaria: ["1° Año", "2° Año", "3° Año", "4° Año", "5° Año"],
+  pre_universitario: ["Ciclo Anual", "Ciclo Semestral", "Ciclo Verano", "Repaso"],
+  universidad: ["1er Ciclo", "2do Ciclo", "3er Ciclo", "4to Ciclo", "5to Ciclo", "6to Ciclo", "7mo Ciclo", "8vo Ciclo", "9no Ciclo", "10mo Ciclo", "Egresado"],
+};
+
+const LISTA_INTERESES = [
+  "Tecnología y Programación", "Arte y Diseño", "Música", "Deportes", 
+  "Ciencias (Biología/Química)", "Matemáticas", "Idiomas", "Lectura y Escritura", 
+  "Robótica", "Medio Ambiente", "Historia", "Negocios y Emprendimiento", 
+  "Psicología", "Videojuegos", "Debate y Oratoria"
+];
+
+const LISTA_CARRERAS = [
+  "Ingeniería de Sistemas / Software", "Medicina Humana", "Derecho", 
+  "Administración de Empresas", "Ingeniería Civil", "Arquitectura", 
+  "Diseño Gráfico / Digital", "Psicología", "Contabilidad", 
+  "Marketing y Publicidad", "Ingeniería Industrial", "Comunicaciones", 
+  "Economía", "Educación", "Biología", "Veterinaria", "Enfermería"
+];
 
 const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
-  // Función helper para parsear intereses
+  // Helpers para parsear
   const parseInterests = (interestsString) => {
     if (!interestsString) return [];
     if (Array.isArray(interestsString)) return interestsString;
@@ -18,9 +49,11 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
     interests: [],
     career_interests: [],
   });
+
+  // Estados temporales para los selects de "Agregar"
+  const [selectedInterest, setSelectedInterest] = useState("");
+  const [selectedCareer, setSelectedCareer] = useState("");
   
-  const [newInterest, setNewInterest] = useState('');
-  const [newCareerInterest, setNewCareerInterest] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -40,41 +73,55 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
     }
   }, [isOpen, userData]);
 
+  // Manejo de cambios generales
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const addInterest = () => {
-    if (newInterest.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        interests: [...prev.interests, newInterest.trim()]
+    const { name, value } = e.target;
+    
+    // Si cambia el nivel educativo, reseteamos el grado
+    if (name === "educational_level") {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: value,
+        current_grade: "" // Reset grado al cambiar nivel
       }));
-      setNewInterest('');
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
-  const removeInterest = (index) => {
+  // --- LÓGICA DE INTERESES (Sin escritura libre) ---
+  const addInterest = () => {
+    if (selectedInterest && !formData.interests.includes(selectedInterest)) {
+      setFormData(prev => ({
+        ...prev,
+        interests: [...prev.interests, selectedInterest]
+      }));
+      setSelectedInterest(""); // Reset select
+    }
+  };
+
+  const removeInterest = (itemToRemove) => {
     setFormData(prev => ({
       ...prev,
-      interests: prev.interests.filter((_, i) => i !== index)
+      interests: prev.interests.filter(i => i !== itemToRemove)
     }));
   };
 
+  // --- LÓGICA DE CARRERAS (Sin escritura libre) ---
   const addCareerInterest = () => {
-    if (newCareerInterest.trim()) {
+    if (selectedCareer && !formData.career_interests.includes(selectedCareer)) {
       setFormData(prev => ({
         ...prev,
-        career_interests: [...prev.career_interests, newCareerInterest.trim()]
+        career_interests: [...prev.career_interests, selectedCareer]
       }));
-      setNewCareerInterest('');
+      setSelectedCareer(""); // Reset select
     }
   };
 
-  const removeCareerInterest = (index) => {
+  const removeCareerInterest = (itemToRemove) => {
     setFormData(prev => ({
       ...prev,
-      career_interests: prev.career_interests.filter((_, i) => i !== index)
+      career_interests: prev.career_interests.filter(i => i !== itemToRemove)
     }));
   };
 
@@ -84,7 +131,6 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
     setError(null);
     
     try {
-      // Convertir arrays a strings antes de enviar
       const dataToSend = {
         ...formData,
         interests: formData.interests.join(','),
@@ -92,17 +138,6 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
       };
       
       await onSave(dataToSend);
-      
-      // Mostrar mensaje de éxito
-      const successMsg = document.createElement('div');
-      successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-[60] animate-fade-in';
-      successMsg.textContent = '✅ Perfil actualizado correctamente';
-      document.body.appendChild(successMsg);
-      
-      setTimeout(() => {
-        successMsg.remove();
-      }, 3000);
-      
       onClose();
     } catch (error) {
       console.error("Error al actualizar perfil:", error);
@@ -114,181 +149,159 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
 
   if (!isOpen) return null;
 
+  // Determinar lista de grados según nivel seleccionado
+  const gradosDisponibles = GRADOS_POR_NIVEL[formData.educational_level] || [];
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="relative bg-[#012E4A] rounded-2xl border border-[#378BA4]/30 p-8 max-w-2xl w-full shadow-2xl max-h-[85vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          disabled={loading}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Editar perfil</h2>
-          <p className="text-gray-400">Actualiza tu información personal</p>
+      <div className="relative bg-[#012E4A] rounded-2xl border border-[#378BA4]/30 p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+        
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Editar Perfil</h2>
+            <p className="text-gray-400 text-sm">Actualiza tu información académica y preferencias</p>
+          </div>
+          <button onClick={onClose} disabled={loading} className="text-gray-400 hover:text-white transition-colors">
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
-            <p className="text-red-300 text-sm">{error}</p>
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg">
+            <p className="text-red-300 text-sm font-medium">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          
+          {/* SECCIÓN 1: DATOS PERSONALES */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Nombre
-              </label>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nombre</label>
               <input
                 type="text"
                 name="first_name"
                 value={formData.first_name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none transition-all"
-                placeholder="Tu nombre"
+                className="w-full px-4 py-3 bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] focus:ring-1 focus:ring-[#378BA4] outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Apellido
-              </label>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Apellido</label>
               <input
                 type="text"
                 name="last_name"
                 value={formData.last_name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none transition-all"
-                placeholder="Tu apellido"
+                className="w-full px-4 py-3 bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] focus:ring-1 focus:ring-[#378BA4] outline-none transition-all"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Correo Electrónico
-            </label>
-            <input
-              type="email"
-              value={userData?.email || ""}
-              disabled
-              className="w-full px-4 py-2.5 bg-[#036280]/20 border border-[#378BA4]/20 rounded-lg text-gray-500 cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              El correo no puede ser modificado
-            </p>
+          <div className="border-t border-[#378BA4]/20 my-2"></div>
+
+          {/* SECCIÓN 2: DATOS ACADÉMICOS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nivel Educativo</label>
+              <select
+                name="educational_level"
+                value={formData.educational_level}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] outline-none appearance-none"
+              >
+                <option value="" className="bg-[#012E4A] text-gray-400">Seleccionar Nivel...</option>
+                {NIVELES_EDUCATIVOS.map((nivel) => (
+                  <option key={nivel.value} value={nivel.value} className="bg-[#012E4A]">
+                    {nivel.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Grado / Ciclo Actual
+              </label>
+              <select
+                name="current_grade"
+                value={formData.current_grade}
+                onChange={handleChange}
+                disabled={!formData.educational_level}
+                className="w-full px-4 py-3 bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] outline-none appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="" className="bg-[#012E4A]">
+                  {formData.educational_level ? "Seleccionar Grado..." : "Selecciona un nivel primero"}
+                </option>
+                {gradosDisponibles.map((grado) => (
+                  <option key={grado} value={grado} className="bg-[#012E4A]">{grado}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nivel Educativo
-            </label>
-            <select
-              name="educational_level"
-              value={formData.educational_level}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] focus:outline-none transition-all"
-            >
-              <option value="" className="bg-[#012E4A]">
-                Seleccionar...
-              </option>
-              <option value="primaria" className="bg-[#012E4A]">
-                Primaria
-              </option>
-              <option value="secundaria" className="bg-[#012E4A]">
-                Secundaria
-              </option>
-              <option value="preparatoria" className="bg-[#012E4A]">
-                Preparatoria
-              </option>
-              <option value="universidad" className="bg-[#012E4A]">
-                Universidad
-              </option>
-            </select>
+             <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Horario Preferido</label>
+             <div className="grid grid-cols-3 gap-3">
+               {['mañana', 'tarde', 'noche'].map((schedule) => (
+                 <button
+                   key={schedule}
+                   type="button"
+                   onClick={() => setFormData(prev => ({...prev, prefered_schedule: schedule}))}
+                   className={`py-2 px-4 rounded-lg border capitalize transition-all ${
+                     formData.prefered_schedule === schedule
+                       ? "bg-[#378BA4] border-[#378BA4] text-white font-medium shadow-lg"
+                       : "bg-transparent border-[#378BA4]/30 text-gray-400 hover:bg-[#378BA4]/10"
+                   }`}
+                 >
+                   {schedule}
+                 </button>
+               ))}
+             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Grado Actual
-            </label>
-            <input
-              type="text"
-              name="current_grade"
-              value={formData.current_grade}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none transition-all"
-              placeholder="Ej: 5to grado, 3er año"
-            />
-          </div>
+          <div className="border-t border-[#378BA4]/20 my-2"></div>
 
+          {/* SECCIÓN 3: INTERESES (TAGS PREDEFINIDOS) */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Horario Preferido
-            </label>
-            <select
-              name="prefered_schedule"
-              value={formData.prefered_schedule}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] focus:outline-none transition-all"
-            >
-              <option value="" className="bg-[#012E4A]">
-                Seleccionar...
-              </option>
-              <option value="mañana" className="bg-[#012E4A]">
-                Mañana
-              </option>
-              <option value="tarde" className="bg-[#012E4A]">
-                Tarde
-              </option>
-              <option value="noche" className="bg-[#012E4A]">
-                Noche
-              </option>
-            </select>
-          </div>
-
-          {/* Intereses Generales */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Intereses Generales
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Mis Intereses
             </label>
             <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={newInterest}
-                onChange={(e) => setNewInterest(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addInterest();
-                  }
-                }}
-                placeholder="Ej: Programación, Diseño, Marketing..."
-                className="flex-1 px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none transition-all"
-              />
+              <select
+                value={selectedInterest}
+                onChange={(e) => setSelectedInterest(e.target.value)}
+                className="flex-1 px-4 py-2.5 bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] outline-none"
+              >
+                <option value="" className="bg-[#012E4A]">Seleccionar interés...</option>
+                {LISTA_INTERESES
+                  .filter(i => !formData.interests.includes(i)) // Ocultar los ya seleccionados
+                  .map((item) => (
+                    <option key={item} value={item} className="bg-[#012E4A]">{item}</option>
+                ))}
+              </select>
               <button
                 type="button"
                 onClick={addInterest}
-                className="px-4 py-2.5 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] transition-colors flex items-center gap-2"
+                disabled={!selectedInterest}
+                className="px-4 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Plus className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
+            
+            {/* Tags visuales */}
+            <div className="flex flex-wrap gap-2 min-h-[32px]">
+              {formData.interests.length === 0 && (
+                <span className="text-sm text-gray-500 italic">No has seleccionado intereses</span>
+              )}
               {formData.interests.map((interest, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#378BA4]/20 border border-[#378BA4]/40 rounded-full text-sm text-white"
-                >
+                <span key={index} className="inline-flex items-center gap-2 px-3 py-1 bg-[#378BA4]/20 border border-[#378BA4]/50 rounded-full text-sm text-white animate-fade-in">
                   {interest}
-                  <button
-                    type="button"
-                    onClick={() => removeInterest(index)}
-                    className="hover:text-red-400 transition-colors"
-                  >
+                  <button type="button" onClick={() => removeInterest(interest)} className="hover:text-red-400 transition-colors">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
@@ -296,45 +309,42 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
             </div>
           </div>
 
-          {/* Intereses de Carrera */}
+          {/* SECCIÓN 4: CARRERAS DE INTERÉS (TAGS PREDEFINIDOS) */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Carreras de Interés
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Carreras que me interesan
             </label>
             <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={newCareerInterest}
-                onChange={(e) => setNewCareerInterest(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addCareerInterest();
-                  }
-                }}
-                placeholder="Ej: Ingeniería de Software, Medicina..."
-                className="flex-1 px-4 py-2.5 bg-[#036280]/30 border border-[#378BA4]/30 rounded-lg text-white placeholder-gray-500 focus:border-[#378BA4] focus:outline-none transition-all"
-              />
+              <select
+                value={selectedCareer}
+                onChange={(e) => setSelectedCareer(e.target.value)}
+                className="flex-1 px-4 py-2.5 bg-[#036280]/20 border border-[#378BA4]/30 rounded-lg text-white focus:border-[#378BA4] outline-none"
+              >
+                <option value="" className="bg-[#012E4A]">Seleccionar carrera...</option>
+                {LISTA_CARRERAS
+                  .filter(c => !formData.career_interests.includes(c))
+                  .map((item) => (
+                    <option key={item} value={item} className="bg-[#012E4A]">{item}</option>
+                ))}
+              </select>
               <button
                 type="button"
                 onClick={addCareerInterest}
-                className="px-4 py-2.5 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] transition-colors flex items-center gap-2"
+                disabled={!selectedCareer}
+                className="px-4 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Plus className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.career_interests.map((interest, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/20 border border-amber-500/40 rounded-full text-sm text-white"
-                >
-                  {interest}
-                  <button
-                    type="button"
-                    onClick={() => removeCareerInterest(index)}
-                    className="hover:text-red-400 transition-colors"
-                  >
+
+            <div className="flex flex-wrap gap-2 min-h-[32px]">
+              {formData.career_interests.length === 0 && (
+                 <span className="text-sm text-gray-500 italic">No has seleccionado carreras</span>
+              )}
+              {formData.career_interests.map((career, index) => (
+                <span key={index} className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/50 rounded-full text-sm text-amber-100 animate-fade-in">
+                  {career}
+                  <button type="button" onClick={() => removeCareerInterest(career)} className="hover:text-red-400 transition-colors">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
@@ -342,17 +352,11 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
             </div>
           </div>
 
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-            <p className="text-sm text-blue-200">
-              💡 Los cambios se guardarán inmediatamente y se reflejarán en tu perfil
-            </p>
-          </div>
-
+          {/* ACTION BUTTONS */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              disabled={loading}
               className="flex-1 py-3 bg-transparent border border-[#378BA4]/30 text-white font-medium rounded-lg hover:bg-[#036280]/50 transition-all"
             >
               Cancelar
@@ -360,17 +364,10 @@ const EditLearnerModal = ({ isOpen, onClose, onSave, userData }) => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-3 bg-[#378BA4] text-white font-medium rounded-lg hover:bg-[#036280] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-[#378BA4] text-white font-medium rounded-lg hover:bg-[#036280] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
             >
-              <Save className="w-5 h-5" />
-              {loading ? (
-                <>
-                  <span className="animate-spin">⏳</span>
-                  Guardando...
-                </>
-              ) : (
-                "Guardar Cambios"
-              )}
+              {loading ? <span className="animate-spin">⏳</span> : <Save className="w-5 h-5" />}
+              Guardar Cambios
             </button>
           </div>
         </form>

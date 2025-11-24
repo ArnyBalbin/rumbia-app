@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { User, GraduationCap, BookOpen, Clock, Briefcase, Globe, FileText, Heart, Target, Mail, Star, Award, Calendar } from "lucide-react";
+import { User, GraduationCap, Briefcase, Heart, Star, Award } from "lucide-react";
+import { useAuth } from "../../../context/AuthContext";
 
 const ProfileOverview = ({ userData }) => {
+  const { getCareers } = useAuth();
   const [careerData, setCareerData] = useState(null);
   const [loadingCareer, setLoadingCareer] = useState(false);
   
@@ -15,30 +17,19 @@ const ProfileOverview = ({ userData }) => {
       if (!hasMentor || !mentorData.career) return;
       
       setLoadingCareer(true);
-      try {
-        const response = await fetch('https://api-rumbia.onrender.com/api/get-careers/', {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (response.ok) {
-          const careers = await response.json();
-          const foundCareer = careers.find(c => c.id_career === mentorData.career);
-          if (foundCareer) {
-            setCareerData(foundCareer);
-          }
+      const result = await getCareers();
+      
+      if (result.success) {
+        const foundCareer = result.data.find(c => c.id_career === mentorData.career);
+        if (foundCareer) {
+          setCareerData(foundCareer);
         }
-      } catch (error) {
-        console.error("Error fetching career:", error);
-      } finally {
-        setLoadingCareer(false);
       }
+      setLoadingCareer(false);
     };
 
     fetchCareer();
-  }, [hasMentor, mentorData.career]);
+  }, [hasMentor, mentorData.career, getCareers]);
 
   const parseInterests = (interestsString) => {
     if (!interestsString) return [];
@@ -60,11 +51,8 @@ const ProfileOverview = ({ userData }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1">
             <p className="text-xs text-gray-400 uppercase tracking-wide">Nombre Completo</p>
-            <p className="text-white font-medium">
-              {userData.first_name} {userData.last_name}
-            </p>
+            <p className="text-white font-medium">{userData.first_name} {userData.last_name}</p>
           </div>
-
           <div className="space-y-1">
             <p className="text-xs text-gray-400 uppercase tracking-wide">Correo Electrónico</p>
             <p className="text-white font-medium break-all">{userData.email}</p>
@@ -77,9 +65,7 @@ const ProfileOverview = ({ userData }) => {
         <div className="bg-[#378BA4]/20 border border-[#378BA4]/40 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-3">
             <Briefcase className="w-5 h-5 text-[#81E6D9]" />
-            <p className="text-xs text-[#81E6D9] font-semibold uppercase tracking-wide">
-              Carrera
-            </p>
+            <p className="text-xs text-[#81E6D9] font-semibold uppercase tracking-wide">Carrera</p>
           </div>
           
           {loadingCareer ? (
@@ -89,18 +75,12 @@ const ProfileOverview = ({ userData }) => {
             </div>
           ) : careerData ? (
             <div className="space-y-2">
-              <h4 className="text-white font-semibold text-lg">
-                {careerData.name_career}
-              </h4>
+              <h4 className="text-white font-semibold text-lg">{careerData.name_career}</h4>
               {careerData.desc_career && (
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {careerData.desc_career}
-                </p>
+                <p className="text-gray-300 text-sm leading-relaxed">{careerData.desc_career}</p>
               )}
               {careerData.duration_years && (
-                <p className="text-[#81E6D9] text-sm">
-                  Duración: {careerData.duration_years} años
-                </p>
+                <p className="text-[#81E6D9] text-sm">Duración: {careerData.duration_years} años</p>
               )}
             </div>
           ) : (
@@ -109,7 +89,7 @@ const ProfileOverview = ({ userData }) => {
         </div>
       )}
 
-      {/* Información del Mentor */}
+      {/* Información del Orientador */}
       {hasMentor && (
         <div className="bg-[#036280]/20 border border-[#378BA4]/30 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -118,12 +98,9 @@ const ProfileOverview = ({ userData }) => {
           </h3>
           
           <div className="space-y-4">
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center bg-white/5 rounded-lg p-4 border border-white/10">
-                <p className="text-2xl font-bold text-white mb-1">
-                  {mentorData.total_sessions || 0}
-                </p>
+                <p className="text-2xl font-bold text-white mb-1">{mentorData.total_sessions || 0}</p>
                 <p className="text-xs text-gray-400">Sesiones</p>
               </div>
               
@@ -138,14 +115,11 @@ const ProfileOverview = ({ userData }) => {
               </div>
 
               <div className="text-center bg-white/5 rounded-lg p-4 border border-white/10">
-                <p className="text-2xl font-bold text-white mb-1">
-                  {mentorData.language || 'N/A'}
-                </p>
+                <p className="text-2xl font-bold text-white mb-1">{mentorData.language || 'N/A'}</p>
                 <p className="text-xs text-gray-400">Idioma</p>
               </div>
             </div>
 
-            {/* Carrera Alternativa */}
             {mentorData.alt_career && (
               <div className="space-y-1 pt-2 border-t border-white/10">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">Carrera Alternativa</p>
@@ -153,13 +127,10 @@ const ProfileOverview = ({ userData }) => {
               </div>
             )}
 
-            {/* Descripción */}
             {mentorData.description && (
               <div className="space-y-1 pt-2 border-t border-white/10">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">Sobre mí</p>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {mentorData.description}
-                </p>
+                <p className="text-gray-300 text-sm leading-relaxed">{mentorData.description}</p>
               </div>
             )}
           </div>
@@ -173,89 +144,52 @@ const ProfileOverview = ({ userData }) => {
             <GraduationCap className="w-5 h-5 text-[#378BA4]" />
             Información Académica
           </h3>
-          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {learnerData.educational_level && (
-              <div className="space-y-1">
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Nivel Educativo</p>
-                <p className="text-white font-medium capitalize">
-                  {learnerData.educational_level}
-                </p>
-              </div>
-            )}
-            
-            {learnerData.current_grade && (
-              <div className="space-y-1">
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Grado Actual</p>
-                <p className="text-white font-medium">
-                  {learnerData.current_grade}
-                </p>
-              </div>
-            )}
-            
-            {learnerData.prefered_schedule && (
-              <div className="space-y-1">
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Horario Preferido</p>
-                <p className="text-white font-medium capitalize">
-                  {learnerData.prefered_schedule}
-                </p>
-              </div>
-            )}
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400 uppercase tracking-wide">Nivel</p>
+              <p className="text-white font-medium capitalize">{learnerData.educational_level || 'N/A'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400 uppercase tracking-wide">Grado</p>
+              <p className="text-white font-medium">{learnerData.current_grade || 'N/A'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400 uppercase tracking-wide">Horario</p>
+              <p className="text-white font-medium capitalize">{learnerData.prefered_schedule || 'N/A'}</p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Intereses - LEARNER */}
+      {/* Intereses */}
       {hasLearner && (interests.length > 0 || careerInterests.length > 0) && (
         <div className="bg-[#036280]/20 border border-[#378BA4]/30 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-[#378BA4]" />
             Intereses y Objetivos
           </h3>
-          
           <div className="space-y-5">
             {interests.length > 0 && (
               <div>
                 <p className="text-sm text-gray-400 mb-3">Intereses Generales</p>
                 <div className="flex flex-wrap gap-2">
-                  {interests.map((interest, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1.5 bg-[#378BA4]/20 border border-[#378BA4]/40 rounded-lg text-sm text-white"
-                    >
-                      {interest}
-                    </span>
+                  {interests.map((i, x) => (
+                    <span key={x} className="px-3 py-1.5 bg-[#378BA4]/20 border border-[#378BA4]/40 rounded-lg text-sm text-white">{i}</span>
                   ))}
                 </div>
               </div>
             )}
-
             {careerInterests.length > 0 && (
               <div>
                 <p className="text-sm text-gray-400 mb-3">Carreras de Interés</p>
                 <div className="flex flex-wrap gap-2">
-                  {careerInterests.map((interest, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1.5 bg-[#378BA4]/30 border border-[#81E6D9]/50 rounded-lg text-sm text-white"
-                    >
-                      {interest}
-                    </span>
+                  {careerInterests.map((i, x) => (
+                    <span key={x} className="px-3 py-1.5 bg-[#378BA4]/30 border border-[#81E6D9]/50 rounded-lg text-sm text-white">{i}</span>
                   ))}
                 </div>
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {hasLearner && !hasMentor && interests.length === 0 && careerInterests.length === 0 && (
-        <div className="bg-[#036280]/20 border border-[#378BA4]/30 rounded-xl p-8 text-center">
-          <Heart className="w-12 h-12 text-[#378BA4]/50 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">
-            Edita tu perfil para agregar intereses y personalizar tu experiencia.
-          </p>
         </div>
       )}
     </div>

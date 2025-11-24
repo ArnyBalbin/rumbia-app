@@ -396,11 +396,16 @@ export const AuthProvider = ({ children }) => {
       }
 
       const data = await response.json();
+      const newPathWithBuster = `/media/${data.path}?t=${new Date().getTime()}`;
+
       const updatedUser = {
         ...user,
-        mentor: { ...user.mentor, profile_img: data.path },
+        mentor: { ...user.mentor, profile_img: newPathWithBuster },
       };
+
       setUser(updatedUser);
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
       return { success: true, data };
     } catch (error) {
       console.error(error);

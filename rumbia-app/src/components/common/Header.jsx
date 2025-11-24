@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { BASE_URL } from "../../../config/api";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -113,7 +114,7 @@ const Header = () => {
     };
 
     const profilePicture = user?.mentor?.profile_img 
-      ? `https://api-rumbia.onrender.com${user.mentor.profile_img}`
+      ? `${BASE_URL}${user.mentor.profile_img}`
       : null;
 
     return (

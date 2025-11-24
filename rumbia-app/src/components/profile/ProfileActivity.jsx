@@ -1,51 +1,31 @@
 import { useState, useEffect } from "react";
-import { Calendar, Clock, MapPin, TrendingUp, AlertCircle, BookOpen, Award, CheckCircle, XCircle } from "lucide-react";
-import { ENDPOINTS } from "../../../config/api";
+import { Calendar, Clock, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
+import { useAuth } from "../../../context/AuthContext";
 
 const ProfileActivity = ({ userData }) => {
+  const { getSessions } = useAuth();
   const [sessions, setSessions] = useState([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    completed: 0,
-    scheduled: 0,
-    cancelled: 0,
-  });
+  const [stats, setStats] = useState({ total: 0, completed: 0, scheduled: 0, cancelled: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (userData?.user_code) {
-      fetchUserActivity();
+      loadActivity();
     }
   }, [userData]);
 
-  const fetchUserActivity = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const loadActivity = async () => {
+    setLoading(true);
+    setError(null);
 
-      // ELIMINADO: const token = localStorage.getItem("accessToken");
+    const result = await getSessions({
+        mentor: userData.mentor?.user_code
+    });
+
+    if (result.success) {
+      const allSessions = Array.isArray(result.data) ? result.data : [];
       
-      const response = await fetch(ENDPOINTS.GET_SESSIONS, {
-        headers: {
-          "Content-Type": "application/json",
-          // ELIMINADO: Authorization header
-        },
-        credentials: "include", // <--- AGREGADO
-      });
-
-      if (!response.ok) {
-        throw new Error("Error al cargar la actividad");
-      }
-      
-      // ... El resto de la lógica se mantiene igual (procesar datos) ...
-      const data = await response.json();
-      const allSessions = Array.isArray(data.results) 
-        ? data.results 
-        : Array.isArray(data) 
-        ? data 
-        : [];
-
       const userSessions = allSessions.filter(
         session => session.mentor?.user?.user_code === userData.user_code || 
                    session.mentor?.user_code === userData.user_code ||
@@ -57,53 +37,16 @@ const ProfileActivity = ({ userData }) => {
       );
 
       setSessions(sortedSessions);
-
-      // Calcular estadísticas
-      const statistics = {
+      setStats({
         total: sortedSessions.length,
         completed: sortedSessions.filter(s => s.session_status === 'completed').length,
         scheduled: sortedSessions.filter(s => s.session_status === 'scheduled').length,
         cancelled: sortedSessions.filter(s => s.session_status === 'cancelled').length,
-      };
-      setStats(statistics);
-
-    } catch (err) {
-      console.error("Error fetching activity:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      });
+    } else {
+      setError(result.error || "Error al cargar la actividad");
     }
-  };
-
-  const getStatusConfig = (status) => {
-    const configs = {
-      scheduled: {
-        label: "Programada",
-        icon: Calendar,
-        className: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-        iconColor: "text-blue-400",
-      },
-      completed: {
-        label: "Completada",
-        icon: CheckCircle,
-        className: "bg-green-500/20 text-green-300 border-green-500/30",
-        iconColor: "text-green-400",
-      },
-      cancelled: {
-        label: "Cancelada",
-        icon: XCircle,
-        className: "bg-red-500/20 text-red-300 border-red-500/30",
-        iconColor: "text-red-400",
-      },
-      in_progress: {
-        label: "En Curso",
-        icon: TrendingUp,
-        className: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-        iconColor: "text-amber-400",
-      },
-    };
-
-    return configs[status] || configs.scheduled;
+    setLoading(false);
   };
 
   if (loading) {
@@ -124,10 +67,7 @@ const ProfileActivity = ({ userData }) => {
         <div className="text-center py-12">
           <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <p className="text-red-400 font-semibold">{error}</p>
-          <button
-            onClick={fetchUserActivity}
-            className="mt-4 px-6 py-2 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] transition-all"
-          >
+          <button onClick={loadActivity} className="mt-4 px-6 py-2 bg-[#378BA4] text-white rounded-lg hover:bg-[#036280] transition-all">
             Reintentar
           </button>
         </div>
@@ -142,9 +82,6 @@ const ProfileActivity = ({ userData }) => {
         <div className="text-center py-12">
           <TrendingUp className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-400 font-semibold">No hay actividad reciente</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Aquí aparecerán tus sesiones y logros
-          </p>
         </div>
       </div>
     );
@@ -153,12 +90,9 @@ const ProfileActivity = ({ userData }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-2xl font-bold text-white">Actividad Reciente</h3>
-        </div>
+        <h3 className="text-2xl font-bold text-white">Actividad Reciente</h3>
       </div>
 
-      {/* Estadísticas rápidas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-[#036280]/30 backdrop-blur-sm rounded-lg border border-[#378BA4]/20 p-4">
           <div className="flex items-center gap-3">

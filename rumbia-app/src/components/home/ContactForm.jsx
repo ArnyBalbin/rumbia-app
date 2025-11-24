@@ -157,7 +157,7 @@ const ContactForm = () => {
                   <label htmlFor="fullName" className="block text-sm font-bold mb-2 text-white">
                     <div className="flex items-center gap-2">
                       <User size={18} className="text-[#378BA4]" />
-                      Nombre completo *
+                      Nombre completo
                     </div>
                   </label>
                   <div className="relative">
@@ -188,7 +188,7 @@ const ContactForm = () => {
                     <label htmlFor="email" className="block text-sm font-bold mb-2 text-white">
                       <div className="flex items-center gap-2">
                         <Mail size={18} className="text-[#378BA4]" />
-                        Email *
+                        Email
                       </div>
                     </label>
                     <input
@@ -215,7 +215,7 @@ const ContactForm = () => {
                     <label htmlFor="phone" className="block text-sm font-bold mb-2 text-white">
                       <div className="flex items-center gap-2">
                         <Phone size={18} className="text-[#378BA4]" />
-                        Teléfono *
+                        Teléfono
                       </div>
                     </label>
                     <input
@@ -244,7 +244,7 @@ const ContactForm = () => {
                   <label htmlFor="message" className="block text-sm font-bold mb-2 text-white">
                     <div className="flex items-center gap-2">
                       <MessageSquare size={18} className="text-[#378BA4]" />
-                      Mensaje *
+                      Mensaje
                     </div>
                   </label>
                   <textarea

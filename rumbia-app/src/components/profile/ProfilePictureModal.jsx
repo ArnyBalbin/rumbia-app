@@ -7,15 +7,17 @@ const ProfilePictureModal = ({ isOpen, onClose, onSave, currentImage }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
+  
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen) {
-      // Reset states cuando se cierra el modal
+    if (isOpen) {
       setPreview(null);
       setSelectedFile(null);
       setError(null);
       setSuccess(false);
+      setImageLoadError(false);
     }
   }, [isOpen]);
 
@@ -24,29 +26,30 @@ const ProfilePictureModal = ({ isOpen, onClose, onSave, currentImage }) => {
     setError(null);
     
     if (file) {
-      // Validar tipo de archivo
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
       if (!allowedTypes.includes(file.type)) {
         setError("Solo se permiten archivos JPG, JPEG o PNG");
         return;
       }
-      
-      // Validar tamaño (5MB máximo)
-      if (file.size > 5 * 1024 * 1024) {
-        setError("La imagen no debe superar los 5MB");
+
+      if (file.size > 15 * 1024 * 1024) { 
+        setError("La imagen no debe superar los 15MB");
         return;
       }
 
       setSelectedFile(file);
+
       const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
       reader.readAsDataURL(file);
     }
   };
 
   const handleSave = async () => {
     if (!selectedFile) {
-      setError("Por favor selecciona una imagen");
+      setError("Por favor selecciona una imagen primero");
       return;
     }
     
@@ -55,7 +58,6 @@ const ProfilePictureModal = ({ isOpen, onClose, onSave, currentImage }) => {
     
     try {
       const result = await onSave(selectedFile);
-      
       if (result?.success) {
         setSuccess(true);
         setTimeout(() => {
@@ -63,129 +65,132 @@ const ProfilePictureModal = ({ isOpen, onClose, onSave, currentImage }) => {
         }, 1500);
       }
     } catch (error) {
-      console.error("Error al subir la foto:", error);
-      setError(error.message || "Error al subir la foto de perfil");
+      setError(error.message || "Error al subir la foto");
     } finally {
       setLoading(false);
     }
   };
 
+  // Lógica de renderizado de la imagen limpia y sin hacks de DOM
+  const renderImage = () => {
+    // 1. Si el usuario acaba de seleccionar una foto, MOSTRAR ESA (Prioridad máxima)
+    if (preview) {
+      return (
+        <img 
+          src={preview} 
+          alt="Previsualización" 
+          className="w-full h-full object-cover animate-fade-in" 
+        />
+      );
+    }
+
+    // 2. Si no hay preview, pero hay imagen del backend Y no ha dado error de carga
+    if (currentImage && !imageLoadError) {
+      return (
+        <img
+          src={currentImage}
+          alt="Actual"
+          className="w-full h-full object-cover"
+          onError={() => setImageLoadError(true)} // Si falla, cambiamos estado, no DOM
+        />
+      );
+    }
+
+    // 3. Si no hay nada o falló la carga, mostrar icono
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-[#0d1117]">
+        <User className="w-20 h-20 text-[#378BA4]/60" />
+      </div>
+    );
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="relative bg-[#012E4A] rounded-2xl border border-[#378BA4]/30 p-8 max-w-md w-full shadow-2xl">
-        <button
-          onClick={onClose}
-          disabled={loading}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Actualizar foto de perfil
-          </h2>
-          <p className="text-gray-400 text-sm">
-            Selecciona una imagen (JPG, PNG - Máx 5MB)
-          </p>
-        </div>
-
-        {/* Preview de la imagen */}
-        <div className="mb-6">
-          <div className="relative w-40 h-40 mx-auto mb-4">
-            <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#378BA4]/50 bg-[#036280]/20">
-              {preview ? (
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : currentImage ? (
-                <img
-                  src={currentImage}
-                  alt="Current"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML = `
-                      <div class="w-full h-full flex items-center justify-center">
-                        <svg class="w-16 h-16 text-[#378BA4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                      </div>
-                    `;
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <User className="w-16 h-16 text-[#378BA4]" />
-                </div>
-              )}
-            </div>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="relative bg-[#0d1117] rounded-xl border border-[#30363d] p-6 max-w-md w-full shadow-2xl no-scrollbar overflow-y-auto max-h-[90vh]">
+        
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white">Foto de perfil</h2>
+            <p className="text-[#8b949e] text-sm mt-1">
+              Selecciona una imagen para previsualizarla.
+            </p>
           </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/jpg"
-            onChange={handleFileSelect}
-            className="hidden"
-            disabled={loading}
-          />
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={loading}
-            className="w-full py-3 bg-[#036280] border border-[#378BA4]/30 text-white font-medium rounded-lg hover:bg-[#378BA4] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Upload className="w-5 h-5" />
-            Seleccionar Imagen
+          <button onClick={onClose} disabled={loading} className="text-[#8b949e] hover:text-white p-1">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Mensajes de error y éxito */}
+        {/* Zona de Imagen */}
+        <div className="flex flex-col items-center gap-6 mb-8">
+          <div className="w-40 h-40 rounded-full overflow-hidden border-[3px] border-[#012E4A] bg-[#0d1117] shadow-sm ring-2 ring-[#378BA4]/30 relative">
+            {renderImage()}
+          </div>
+
+          {/* Botones de selección */}
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/jpg"
+              onChange={handleFileSelect}
+              className="hidden"
+              disabled={loading}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading}
+              className="px-4 py-2 bg-[#21262d] border border-[#30363d] text-[#c9d1d9] font-medium rounded-md hover:bg-[#30363d] hover:border-[#8b949e] transition-all flex items-center gap-2 text-sm"
+            >
+              <Upload className="w-4 h-4" />
+              Subir foto...
+            </button>
+            <p className="text-[#8b949e] text-xs mt-2 text-center">JPG o PNG, máx 15MB</p>
+          </div>
+        </div>
+
+        {/* Mensajes */}
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
+          <div className="mb-6 p-3 bg-red-900/20 border border-red-500/30 rounded-md flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-red-400 text-sm">{error}</p>
           </div>
         )}
-
         {success && (
-          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start gap-2">
+          <div className="mb-6 p-3 bg-green-900/20 border border-green-500/30 rounded-md flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-            <p className="text-green-400 text-sm">¡Foto actualizada correctamente!</p>
+            <p className="text-green-400 text-sm">Foto actualizada correctamente.</p>
           </div>
         )}
 
-        {/* Botones de acción */}
-        <div className="flex gap-3">
+        {/* Footer Actions */}
+        <div className="flex justify-end gap-3 border-t border-[#30363d] pt-4">
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 py-3 bg-transparent border border-[#378BA4]/30 text-white font-medium rounded-lg hover:bg-[#036280]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-transparent text-[#c9d1d9] font-medium rounded-md hover:bg-[#30363d] transition-all disabled:opacity-50 text-sm"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={loading || !selectedFile || success}
-            className="flex-1 py-3 bg-[#378BA4] text-white font-medium rounded-lg hover:bg-[#036280] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-[#238636] text-white font-medium rounded-md hover:bg-[#2ea043] transition-all disabled:opacity-50 disabled:bg-[#238636]/50 flex items-center justify-center gap-2 text-sm min-w-[120px]"
           >
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Subiendo...
-              </span>
+              <>
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                Guardando
+              </>
             ) : success ? (
-              "¡Guardado!"
+              <>
+                <CheckCircle className="w-4 h-4" />
+                Guardado
+              </>
             ) : (
-              "Guardar"
+              "Establecer foto"
             )}
           </button>
         </div>

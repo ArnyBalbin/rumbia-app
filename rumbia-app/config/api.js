@@ -1,4 +1,5 @@
-export const API_BASE_URL = 'https://api-rumbia.onrender.com/api';
+export const BASE_URL = 'https://api-rumbia.onrender.com';
+export const API_BASE_URL = `${BASE_URL}/api`;
 
 export const ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/register/`,
