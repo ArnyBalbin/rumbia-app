@@ -16,26 +16,24 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
   }, [mentorImageUrl]);
 
   return (
-    <div className="py-4">
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-        {/* Contenedor de la Imagen */}
-        <div className="relative group">
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-[3px] border-[#012E4A] bg-[#036280]/20 shadow-sm ring-2 ring-[#378BA4]/30 flex items-center justify-center">
-            {/* 4. Renderizado condicional basado en Estado, no en manipulación del DOM */}
+    <div className="w-full py-6 border-b border-[#378BA4]/20 mb-6">
+      <div className="flex flex-row items-start gap-5 md:gap-6">
+        
+        {/* --- 1. AVATAR (Estilo GitHub: Limpio, alineado arriba) --- */}
+        <div className="relative group shrink-0">
+          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-[#036280]/20 ring-1 ring-[#378BA4]/40 shadow-sm flex items-center justify-center">
             {mentorImageUrl && !imageError ? (
               <img
                 src={mentorImageUrl}
                 alt={`${userData.first_name} ${userData.last_name}`}
                 className="w-full h-full object-cover"
-                onError={() => setImageError(true)} // Solo cambiamos el estado
+                onError={() => setImageError(true)}
               />
             ) : (
-              // Fallback visual
-              <div className="w-full h-full flex items-center justify-center bg-[#036280]/20">
+              <div className="w-full h-full flex items-center justify-center bg-[#012E4A]">
                 {mentorImageUrl ? (
-                  // Si había URL pero falló, mostramos el icono de error o usuario
                   <svg
-                    className="w-14 h-14 text-[#378BA4]/60"
+                    className="w-10 h-10 text-[#378BA4]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -43,50 +41,53 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth="2"
+                      strokeWidth="1.5"
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                     ></path>
                   </svg>
                 ) : (
-                  // Si no hay URL, mostramos el icono por defecto
-                  <User className="w-14 h-14 text-[#378BA4]/60" />
+                  <User className="w-10 h-10 text-[#378BA4]" />
                 )}
               </div>
             )}
           </div>
 
-          {/* Botón de cámara */}
+          {/* Botón de cámara: Más discreto, aparece en hover (desktop) o siempre visible pero sutil (móvil) */}
           {hasMentor && (
             <button
               onClick={onEditPicture}
-              className="absolute bottom-0 right-0 p-1.5 bg-[#378BA4] rounded-full border-2 border-[#012E4A] text-white shadow-sm hover:bg-[#036280] hover:scale-105 transition-all md:opacity-0 md:group-hover:opacity-100 z-10"
-              title="Cambiar foto de perfil"
+              className="absolute bottom-0 -right-1 p-1.5 bg-[#012E4A] rounded-full border border-[#378BA4]/50 text-[#378BA4] hover:text-white hover:bg-[#378BA4] transition-all shadow-sm"
+              title="Cambiar foto"
             >
-              <Camera className="w-4 h-4" />
+              <Camera className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {/* Información del Usuario */}
-        <div className="space-y-1 text-left">
-          <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+        {/* --- 2. INFORMACIÓN (Alineación estricta a la izquierda) --- */}
+        <div className="flex flex-col items-start pt-1 min-w-0">
+          
+          {/* Nombre: Reducido de tamaño, mejor interlineado */}
+          <h1 className="text-xl md:text-2xl font-semibold text-white tracking-tight leading-snug truncate max-w-full">
             {userData.first_name} {userData.last_name}
           </h1>
 
-          <div className="flex items-center gap-2 text-gray-400 text-sm font-medium">
-            <Mail className="w-4 h-4" />
-            <span>{userData.email}</span>
+          {/* Email: Estilo "Metadata" gris suave */}
+          <div className="flex items-center gap-1.5 text-gray-400 text-sm mt-1 mb-3">
+            <Mail className="w-3.5 h-3.5 opacity-70" />
+            <span className="truncate">{userData.email}</span>
           </div>
 
-          <div className="flex gap-2 pt-2">
-            {hasLearner && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900/50 text-blue-200 border border-blue-700/50">
-                Estudiante
+          {/* Badges: Estilo Tags/Pills refinados */}
+          <div className="flex flex-wrap gap-2">
+            {hasMentor && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-500/10 text-amber-200 border border-amber-500/20 select-none">
+                Mentor
               </span>
             )}
-            {hasMentor && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-900/50 text-amber-200 border border-amber-700/50">
-                Mentor
+            {hasLearner && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-500/10 text-blue-200 border border-blue-500/20 select-none">
+                Estudiante
               </span>
             )}
           </div>
