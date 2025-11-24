@@ -16,12 +16,12 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
   }, [mentorImageUrl]);
 
   return (
-    <div className="w-full py-6 border-b border-[#378BA4]/20 mb-6">
-      <div className="flex flex-row items-start gap-5 md:gap-6">
-        
-        {/* --- 1. AVATAR (Estilo GitHub: Limpio, alineado arriba) --- */}
-        <div className="relative group shrink-0">
-          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-[#036280]/20 ring-1 ring-[#378BA4]/40 shadow-sm flex items-center justify-center">
+    <div className="bg-[#012E4A]/80 backdrop-blur-xl rounded-xl border border-[#378BA4]/30 p-6 shadow-xl">
+      <div className="flex flex-col items-center gap-2">
+        <div className="relative group w-full flex justify-center">
+          
+          {/* Contenedor del Avatar (el padre relativo para el botón) */}
+          <div className="w-56 h-56 md:w-72 md:h-72 rounded-full overflow-hidden bg-[#036280]/40 ring-2 ring-[#378BA4]/40 shadow-lg flex items-center justify-center relative z-0">
             {mentorImageUrl && !imageError ? (
               <img
                 src={mentorImageUrl}
@@ -33,7 +33,7 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
               <div className="w-full h-full flex items-center justify-center bg-[#012E4A]">
                 {mentorImageUrl ? (
                   <svg
-                    className="w-10 h-10 text-[#378BA4]"
+                    className="w-28 h-28 text-[#378BA4]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -46,40 +46,37 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
                     ></path>
                   </svg>
                 ) : (
-                  <User className="w-10 h-10 text-[#378BA4]" />
+                  <User className="w-28 h-28 text-[#378BA4]" />
                 )}
               </div>
             )}
           </div>
-
-          {/* Botón de cámara: Más discreto, aparece en hover (desktop) o siempre visible pero sutil (móvil) */}
+          
+          {/* BOTÓN DE CÁMARA MEJORADO */}
           {hasMentor && (
             <button
               onClick={onEditPicture}
-              className="absolute bottom-0 -right-1 p-1.5 bg-[#012E4A] rounded-full border border-[#378BA4]/50 text-[#378BA4] hover:text-white hover:bg-[#378BA4] transition-all shadow-sm"
+              // Posicionamiento absoluto relativo al *padre del avatar*.
+              // bottom-0 y right-0 lo lleva a la esquina inferior derecha del padre.
+              // translate-x-3 translate-y-3 lo empuja fuera de esa esquina para que flote bien.
+              // El `z-10` asegura que esté sobre el avatar.
+              className="absolute bottom-2 right-2 md:bottom-3 md:right-3 p-2 bg-[#012E4A] rounded-full border border-[#378BA4]/50 text-[#378BA4] hover:text-white hover:bg-[#378BA4] transition-colors shadow-sm z-10"
               title="Cambiar foto"
             >
-              <Camera className="w-3.5 h-3.5" />
+              <Camera className="w-5 h-5" />
             </button>
           )}
         </div>
 
-        {/* --- 2. INFORMACIÓN (Alineación estricta a la izquierda) --- */}
-        <div className="flex flex-col items-start pt-1 min-w-0">
-          
-          {/* Nombre: Reducido de tamaño, mejor interlineado */}
-          <h1 className="text-xl md:text-2xl font-semibold text-white tracking-tight leading-snug truncate max-w-full">
+        <div className="flex flex-col items-center min-w-0 w-full mt-2">
+          <span className="text-xl font-medium text-gray-200 tracking-tight truncate w-full text-center mb-1">
             {userData.first_name} {userData.last_name}
-          </h1>
-
-          {/* Email: Estilo "Metadata" gris suave */}
-          <div className="flex items-center gap-1.5 text-gray-400 text-sm mt-1 mb-3">
+          </span>
+          <div className="flex items-center justify-center gap-2 text-gray-400 text-sm mb-3 w-full">
             <Mail className="w-3.5 h-3.5 opacity-70" />
             <span className="truncate">{userData.email}</span>
           </div>
-
-          {/* Badges: Estilo Tags/Pills refinados */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap justify-center gap-2 w-full">
             {hasMentor && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-500/10 text-amber-200 border border-amber-500/20 select-none">
                 Mentor
