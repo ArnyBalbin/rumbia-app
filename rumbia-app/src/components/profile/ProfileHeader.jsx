@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Mail, Camera } from "lucide-react";
+import { User, Mail } from "lucide-react";
 import { BASE_URL } from "../../../config/api";
 
 const ProfileHeader = ({ userData, onEditPicture }) => {
@@ -15,68 +15,76 @@ const ProfileHeader = ({ userData, onEditPicture }) => {
     setImageError(false);
   }, [mentorImageUrl]);
 
+  const AvatarContent = (
+    <div className="relative pt-[100%] rounded-full overflow-hidden bg-[#036280]/40 ring-2 ring-[#378BA4]/40 shadow-lg flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center">
+        {mentorImageUrl && !imageError ? (
+          <img
+            src={mentorImageUrl}
+            alt={`${userData.first_name} ${userData.last_name}`}
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-[#012E4A]">
+            {mentorImageUrl ? (
+              <svg
+                className="w-16 h-16 md:w-20 md:h-20 text-[#378BA4] transition-all duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                ></path>
+              </svg>
+            ) : (
+              <User className="w-16 h-16 md:w-20 md:h-20 text-[#378BA4] transition-all duration-300" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-[#012E4A]/80 backdrop-blur-xl rounded-xl border border-[#378BA4]/30 p-6 shadow-xl">
       <div className="flex flex-col items-center gap-2">
         <div className="relative group w-full flex justify-center">
-          
-          {/* Contenedor del Avatar (el padre relativo para el botón) */}
-          <div className="w-56 h-56 md:w-72 md:h-72 rounded-full overflow-hidden bg-[#036280]/40 ring-2 ring-[#378BA4]/40 shadow-lg flex items-center justify-center relative z-0">
-            {mentorImageUrl && !imageError ? (
-              <img
-                src={mentorImageUrl}
-                alt={`${userData.first_name} ${userData.last_name}`}
-                className="w-full h-full object-cover"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-[#012E4A]">
-                {mentorImageUrl ? (
-                  <svg
-                    className="w-28 h-28 text-[#378BA4]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    ></path>
-                  </svg>
-                ) : (
-                  <User className="w-28 h-28 text-[#378BA4]" />
-                )}
-              </div>
-            )}
-          </div>
-          
-          {/* BOTÓN DE CÁMARA MEJORADO */}
-          {hasMentor && (
-            <button
-              onClick={onEditPicture}
-              // Posicionamiento absoluto relativo al *padre del avatar*.
-              // bottom-0 y right-0 lo lleva a la esquina inferior derecha del padre.
-              // translate-x-3 translate-y-3 lo empuja fuera de esa esquina para que flote bien.
-              // El `z-10` asegura que esté sobre el avatar.
-              className="absolute bottom-2 right-2 md:bottom-3 md:right-3 p-2 bg-[#012E4A] rounded-full border border-[#378BA4]/50 text-[#378BA4] hover:text-white hover:bg-[#378BA4] transition-colors shadow-sm z-10"
-              title="Cambiar foto"
-            >
-              <Camera className="w-5 h-5" />
-            </button>
+          {hasMentor ? (
+            <div className="flex flex-col items-center w-full max-w-xs md:max-w-sm lg:max-w-md">
+              <button
+                onClick={onEditPicture}
+                className="p-0 border-none bg-transparent cursor-pointer focus:outline-none w-full"
+              >
+                {AvatarContent}
+              </button>
+              <button
+                onClick={onEditPicture}
+                className="absolute top-full mt-2 px-3 py-1 rounded text-sm font-medium bg-gray-700/80 text-white/90 shadow-md backdrop-blur-sm 
+                           hidden group-hover:block transition-all duration-300 transform translate-y-0 hover:bg-gray-600/90 focus:outline-none z-20"
+              >
+                Cambiar foto de perfil
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-full relative w-full max-w-xs md:max-w-sm lg:max-w-md">
+              {AvatarContent}
+            </div>
           )}
         </div>
-
-        <div className="flex flex-col items-center min-w-0 w-full mt-2">
-          <span className="text-xl font-medium text-gray-200 tracking-tight truncate w-full text-center mb-1">
+        <div className="flex flex-col items-start min-w-0 w-full mt-2">
+          <span className="text-xl font-medium text-gray-200 tracking-tight truncate w-full text-left mb-1">
             {userData.first_name} {userData.last_name}
           </span>
-          <div className="flex items-center justify-center gap-2 text-gray-400 text-sm mb-3 w-full">
+          <div className="flex items-center gap-2 text-gray-400 text-sm mb-3 w-full">
             <Mail className="w-3.5 h-3.5 opacity-70" />
             <span className="truncate">{userData.email}</span>
           </div>
-          <div className="flex flex-wrap justify-center gap-2 w-full">
+          <div className="flex flex-wrap justify-start gap-2 w-full">
             {hasMentor && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-500/10 text-amber-200 border border-amber-500/20 select-none">
                 Mentor
