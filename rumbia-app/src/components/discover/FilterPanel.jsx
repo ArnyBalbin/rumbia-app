@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-// SVG Icons
 const FilterSVG = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -100,16 +99,16 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
       {/* Mobile Filter Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden w-full px-6 py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-2xl flex items-center justify-center gap-3 mb-6 hover:shadow-2xl hover:shadow-[#378BA4]/60 transition-all duration-300 hover:scale-105"
+        className="lg:hidden w-full px-6 py-4 bg-gradient-to-r from-[#378BA4] to-[#036280] text-white font-bold rounded-2xl flex items-center justify-center gap-3 mb-6 hover:shadow-2xl hover:shadow-[#378BA4]/60 transition-all duration-300 hover:scale-[1.02]" // Scale más sutil
       >
         <FilterSVG size={22} />
         <span className="text-lg">Filtros {hasActiveFilters && `(${activeFiltersCount})`}</span>
       </button>
 
-      {/* Filter Panel */}
-      <div className={`${isOpen ? 'block' : 'hidden'} lg:block space-y-4 bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/30 shadow-2xl`}>
+      {/* Filter Panel - MEJORAS DE CONTENEDOR */}
+      <div className={`${isOpen ? 'block' : 'hidden'} lg:block space-y-4 bg-white/5 backdrop-blur-3xl rounded-3xl p-6 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]`}>
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/30">
+        <div className="flex items-center justify-between pb-4 border-b border-white/20">
           <h3 className="text-2xl font-bold text-white flex items-center gap-3">
             <FilterSVG size={24} />
             Filtros
@@ -117,9 +116,9 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-sm text-[#378BA4] hover:text-white flex items-center gap-2 transition-colors font-bold px-3 py-2 rounded-lg hover:bg-white/10"
+              className="text-sm text-[#378BA4] hover:text-white flex items-center gap-2 transition-colors font-bold px-3 py-1.5 rounded-xl border border-[#378BA4]/30 hover:bg-[#378BA4] hover:border-transparent" // Botón de limpiar mejorado
             >
-              <CloseSVG size={16} />
+              <CloseSVG size={16} strokeWidth={3} /> {/* Stroke más grueso para la X */}
               Limpiar
             </button>
           )}
@@ -127,10 +126,10 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
 
         {/* Categorías */}
         {categories.length > 0 && (
-          <div className="border-b border-white/20 pb-4">
+          <div className="border-b border-white/15 pb-4">
             <button
               onClick={() => toggleSection('categories')}
-              className="w-full flex items-center justify-between text-white font-bold mb-3 hover:text-[#378BA4] transition-colors py-2"
+              className={`w-full flex items-center justify-between font-bold mb-3 transition-colors py-2 ${expandedSections.categories ? 'text-[#378BA4]' : 'text-white hover:text-[#378BA4]'}`} // Color de acento al estar abierto
             >
               <span className="text-lg">Categorías</span>
               <ChevronSVG size={22} isOpen={expandedSections.categories} />
@@ -144,19 +143,19 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
             >
               <div className="space-y-2.5 overflow-hidden hover:overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: '240px' }}>
                 {categories.map(category => (
-                  <label key={category.id_category} className="flex items-center gap-3 cursor-pointer group py-1.5 hover:bg-white/5 rounded-lg px-2 transition-colors">
+                  <label key={category.id_category} className="flex items-center gap-3 cursor-pointer group py-1.5 rounded-lg px-2 transition-colors hover:bg-white/10">
                     <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
                       <input
                         type="checkbox"
                         checked={filters.categories.includes(category.id_category)}
                         onChange={() => toggleFilter('categories', category.id_category)}
-                        className="appearance-none w-5 h-5 rounded-md border-2 border-white/50 bg-white/5 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]"
+                        className="appearance-none w-5 h-5 rounded-full border-2 border-white/50 bg-white/10 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]/80" // Checkbox mejorado, border y radio a rounded-full
                       />
-                      <svg className="absolute w-3.5 h-3.5 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" style={{ display: filters.categories.includes(category.id_category) ? 'block' : 'none' }}>
+                      <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24" style={{ display: filters.categories.includes(category.id_category) ? 'block' : 'none' }}> {/* Icono de check más pequeño y stroke más grueso */}
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </div>
-                    <span className="text-sm text-white/80 group-hover:text-white transition-colors font-medium">
+                    <span className="text-sm text-white/90 group-hover:text-white transition-colors font-medium">
                       {category.category_name}
                     </span>
                   </label>
@@ -168,10 +167,10 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
 
         {/* Carreras */}
         {careers.length > 0 && (
-          <div className="border-b border-white/20 pb-4">
+          <div className="border-b border-white/15 pb-4">
             <button
               onClick={() => toggleSection('careers')}
-              className="w-full flex items-center justify-between text-white font-bold mb-3 hover:text-[#378BA4] transition-colors py-2"
+              className={`w-full flex items-center justify-between font-bold mb-3 transition-colors py-2 ${expandedSections.careers ? 'text-[#378BA4]' : 'text-white hover:text-[#378BA4]'}`}
             >
               <span className="text-lg">Carreras</span>
               <ChevronSVG size={22} isOpen={expandedSections.careers} />
@@ -185,19 +184,19 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
             >
               <div className="space-y-2.5 overflow-hidden hover:overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: '240px' }}>
                 {careers.map(career => (
-                  <label key={career.id_career} className="flex items-center gap-3 cursor-pointer group py-1.5 hover:bg-white/5 rounded-lg px-2 transition-colors">
+                  <label key={career.id_career} className="flex items-center gap-3 cursor-pointer group py-1.5 rounded-lg px-2 transition-colors hover:bg-white/10">
                     <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
                       <input
                         type="checkbox"
                         checked={filters.careers.includes(career.id_career)}
                         onChange={() => toggleFilter('careers', career.id_career)}
-                        className="appearance-none w-5 h-5 rounded-md border-2 border-white/50 bg-white/5 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]"
+                        className="appearance-none w-5 h-5 rounded-full border-2 border-white/50 bg-white/10 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]/80"
                       />
-                      <svg className="absolute w-3.5 h-3.5 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" style={{ display: filters.careers.includes(career.id_career) ? 'block' : 'none' }}>
+                      <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24" style={{ display: filters.careers.includes(career.id_career) ? 'block' : 'none' }}>
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </div>
-                    <span className="text-sm text-white/80 group-hover:text-white transition-colors font-medium">
+                    <span className="text-sm text-white/90 group-hover:text-white transition-colors font-medium">
                       {career.name_career}
                     </span>
                   </label>
@@ -208,10 +207,10 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
         )}
 
         {/* Precio */}
-        <div className="border-b border-white/20 pb-4">
+        <div className="border-b border-white/15 pb-4">
           <button
             onClick={() => toggleSection('price')}
-            className="w-full flex items-center justify-between text-white font-bold mb-3 hover:text-[#378BA4] transition-colors py-2"
+            className={`w-full flex items-center justify-between font-bold mb-3 transition-colors py-2 ${expandedSections.price ? 'text-[#378BA4]' : 'text-white hover:text-[#378BA4]'}`}
           >
             <span className="text-lg">Precio</span>
             <ChevronSVG size={22} isOpen={expandedSections.price} />
@@ -225,19 +224,19 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
           >
             <div className="space-y-2.5">
               {priceRanges.map(range => (
-                <label key={range.value} className="flex items-center gap-3 cursor-pointer group py-1.5 hover:bg-white/5 rounded-lg px-2 transition-colors">
+                <label key={range.value} className="flex items-center gap-3 cursor-pointer group py-1.5 rounded-lg px-2 transition-colors hover:bg-white/10">
                   <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
                     <input
                       type="checkbox"
                       checked={filters.priceRange.includes(range.value)}
                       onChange={() => toggleFilter('priceRange', range.value)}
-                      className="appearance-none w-5 h-5 rounded-md border-2 border-white/50 bg-white/5 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]"
+                      className="appearance-none w-5 h-5 rounded-full border-2 border-white/50 bg-white/10 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]/80"
                     />
-                    <svg className="absolute w-3.5 h-3.5 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" style={{ display: filters.priceRange.includes(range.value) ? 'block' : 'none' }}>
+                    <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24" style={{ display: filters.priceRange.includes(range.value) ? 'block' : 'none' }}>
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                   </div>
-                  <span className="text-sm text-white/80 group-hover:text-white transition-colors font-medium">{range.label}</span>
+                  <span className="text-sm text-white/90 group-hover:text-white transition-colors font-medium">{range.label}</span>
                 </label>
               ))}
             </div>
@@ -248,7 +247,7 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
         <div className="pb-2">
           <button
             onClick={() => toggleSection('schedule')}
-            className="w-full flex items-center justify-between text-white font-bold mb-3 hover:text-[#378BA4] transition-colors py-2"
+            className={`w-full flex items-center justify-between font-bold mb-3 transition-colors py-2 ${expandedSections.schedule ? 'text-[#378BA4]' : 'text-white hover:text-[#378BA4]'}`}
           >
             <span className="text-lg">Horario</span>
             <ChevronSVG size={22} isOpen={expandedSections.schedule} />
@@ -262,19 +261,19 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
           >
             <div className="space-y-2.5">
               {schedules.map(schedule => (
-                <label key={schedule.value} className="flex items-center gap-3 cursor-pointer group py-1.5 hover:bg-white/5 rounded-lg px-2 transition-colors">
+                <label key={schedule.value} className="flex items-center gap-3 cursor-pointer group py-1.5 rounded-lg px-2 transition-colors hover:bg-white/10">
                   <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
                     <input
                       type="checkbox"
                       checked={filters.schedule.includes(schedule.value)}
                       onChange={() => toggleFilter('schedule', schedule.value)}
-                      className="appearance-none w-5 h-5 rounded-md border-2 border-white/50 bg-white/5 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]"
+                      className="appearance-none w-5 h-5 rounded-full border-2 border-white/50 bg-white/10 checked:bg-gradient-to-br checked:from-[#378BA4] checked:to-[#036280] checked:border-transparent focus:outline-none focus:ring-2 focus:ring-[#378BA4]/60 transition-all cursor-pointer group-hover:border-[#378BA4]/80"
                     />
-                    <svg className="absolute w-3.5 h-3.5 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" style={{ display: filters.schedule.includes(schedule.value) ? 'block' : 'none' }}>
+                    <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24" style={{ display: filters.schedule.includes(schedule.value) ? 'block' : 'none' }}>
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                   </div>
-                  <span className="text-sm text-white/80 group-hover:text-white transition-colors font-medium">{schedule.label}</span>
+                  <span className="text-sm text-white/90 group-hover:text-white transition-colors font-medium">{schedule.label}</span>
                 </label>
               ))}
             </div>
@@ -283,7 +282,7 @@ const FilterPanel = ({ filters, setFilters, isOpen, setIsOpen, careers = [], cat
       </div>
 
       <style>{`
-        /* Scrollbar oculto por defecto, visible solo en hover */
+        /* Scrollbar styles remain */
         .custom-scrollbar {
           scrollbar-width: thin;
           scrollbar-color: transparent transparent;

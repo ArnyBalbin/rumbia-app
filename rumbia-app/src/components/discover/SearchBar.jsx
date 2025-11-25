@@ -24,13 +24,19 @@ const SearchBar = ({ value, onChange, placeholder = "Buscar por carrera, mentor 
         <SearchSVG size={22} />
       </div>
 
-      {/* Input */}
+      {/* Input - CLASES DE ESTILO CON FONDO SÓLIDO */}
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-xl border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#378BA4] focus:border-transparent shadow-lg transition-all hover:border-white/50"
+        className="w-full pl-12 pr-4 py-4 
+          bg-[#012E4A] /* CAMBIO CLAVE: Fondo sólido oscuro */
+          border border-white/20 rounded-xl 
+          text-white placeholder-white/70 focus:outline-none 
+          focus:ring-4 focus:ring-[#378BA4]/60 focus:border-[#378BA4] 
+          shadow-lg transition-all duration-300 
+          hover:border-[#378BA4]/60 hover:shadow-2xl hover:shadow-[#036280]/30" 
       />
     </div>
   );
