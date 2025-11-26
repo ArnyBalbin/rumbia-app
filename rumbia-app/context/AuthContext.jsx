@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       const parsedUser = JSON.parse(storedUser);
-
       setUser(parsedUser);
       setIsAuthenticated(true);
 
@@ -96,17 +95,14 @@ export const AuthProvider = ({ children }) => {
             email: fullUserData.email || data.email || email,
             first_name: fullUserData.first_name || "",
             last_name: fullUserData.last_name || "",
-            name: `${fullUserData.first_name || ""} ${
-              fullUserData.last_name || ""
-            }`.trim(),
-            tipo: data.tipo,
+            name: `${fullUserData.first_name || ""} ${fullUserData.last_name || ""}`.trim(),
+            tipo: fullUserData.mentor?.is_mentor ? "mentor" : "learner",
             profile_picture: profilePic,
             mentor: fullUserData.mentor,
             learner: fullUserData.learner,
           };
 
           localStorage.setItem("currentUser", JSON.stringify(userData));
-
           setUser(userData);
           setIsAuthenticated(true);
           return { success: true, data: userData };
@@ -178,6 +174,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = async (updateData) => {
+    try {
+      if (!user?.user_code) throw new Error("No se encontró el user_code");
+
+      const response = await fetch(ENDPOINTS.UPDATE_USER, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ user_code: user.user_code, ...updateData }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || data.error || "Error al actualizar usuario");
+      }
+
+      const updatedUser = { ...user, ...data };
+      
+      if (data.first_name || data.last_name) {
+          updatedUser.name = `${data.first_name || user.first_name} ${data.last_name || user.last_name}`.trim();
+      }
+
+      setUser(updatedUser);
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
+      return { success: true, data };
+    } catch (error) {
+      console.error(error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const updateLearnerProfile = async (profileData) => {
     try {
       if (!user?.user_code) throw new Error("No se encontró el user_code");
@@ -191,6 +220,7 @@ export const AuthProvider = ({ children }) => {
 
       if (!response.ok) throw new Error("Error al actualizar perfil");
       const updatedData = await response.json();
+      
       const newUserState = {
         ...user,
         learner: { ...user.learner, ...updatedData },
@@ -219,7 +249,12 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Error al convertir");
 
-      const updatedUser = { ...user, tipo: "mentor" };
+      const updatedUser = { 
+        ...user, 
+        tipo: "mentor",
+        mentor: { ...user.mentor, is_mentor: true, ...mentorData }
+      };
+      
       setUser(updatedUser);
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
@@ -259,6 +294,45 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const uploadMentorImage = async (imageFile) => {
+    try {
+      if (!user?.user_code) throw new Error("No se encontró user_code");
+      if (!imageFile) throw new Error("No hay imagen");
+
+      const formData = new FormData();
+      formData.append("user_code", user.user_code);
+      formData.append("profile_img", imageFile);
+
+      const response = await fetch(ENDPOINTS.POST_MENTOR_IMAGE, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al subir imagen");
+      }
+
+      const data = await response.json();
+
+      const newPathWithBuster = `/media/${data.path}?t=${new Date().getTime()}`;
+
+      const updatedUser = {
+        ...user,
+        mentor: { ...user.mentor, profile_img: newPathWithBuster },
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
+      return { success: true, data };
+    } catch (error) {
+      console.error(error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const createSession = async (sessionData) => {
     try {
       if (!user?.user_code) throw new Error("No se encontró el user_code");
@@ -286,9 +360,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch(ENDPOINTS.UPDATE_SESSION, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           uuid: sessionUuid,
@@ -297,7 +369,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-
       if (!response.ok)
         throw new Error(data.error || "Error al actualizar sesión");
 
@@ -311,17 +382,14 @@ export const AuthProvider = ({ children }) => {
   const getSessions = async (filters = {}) => {
     try {
       const params = new URLSearchParams();
-      if (filters.session_status)
-        params.append("session_status", filters.session_status);
+      if (filters.session_status) params.append("session_status", filters.session_status);
       if (filters.career_id) params.append("career_id", filters.career_id);
-      if (filters.category_id)
-        params.append("category_id", filters.category_id);
+      if (filters.category_id) params.append("category_id", filters.category_id);
       if (filters.start_date) params.append("start_date", filters.start_date);
       if (filters.end_date) params.append("end_date", filters.end_date);
+      if (filters.mentor) params.append("mentor", filters.mentor);
 
-      const url = `${ENDPOINTS.GET_SESSIONS}${
-        params.toString() ? "?" + params.toString() : ""
-      }`;
+      const url = `${ENDPOINTS.GET_SESSIONS}${params.toString() ? "?" + params.toString() : ""}`;
 
       const response = await fetch(url, {
         method: "GET",
@@ -337,6 +405,45 @@ export const AuthProvider = ({ children }) => {
         count: data.count,
         filters: data.filters_applied,
       };
+    } catch (error) {
+      console.error(error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getSessionInfo = async (sessionCode) => {
+    try {
+      const response = await fetch(ENDPOINTS.GET_SESSION_INFO(sessionCode), {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Error al obtener info sesión");
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error(error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const inscribeLearner = async (sessionCode) => {
+    try {
+      if (!user?.user_code) throw new Error("No se encontró user_code");
+
+      const response = await fetch(ENDPOINTS.INSCRIBE_LEARNER, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          user_code: user.user_code,
+          uuid: sessionCode,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Error al inscribirse");
+      return { success: true, data };
     } catch (error) {
       console.error(error);
       return { success: false, error: error.message };
@@ -375,87 +482,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const uploadMentorImage = async (imageFile) => {
-    try {
-      if (!user?.user_code) throw new Error("No se encontró user_code");
-      if (!imageFile) throw new Error("No hay imagen");
-
-      const formData = new FormData();
-      formData.append("user_code", user.user_code);
-      formData.append("profile_img", imageFile);
-
-      const response = await fetch(ENDPOINTS.POST_MENTOR_IMAGE, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Error al subir imagen");
-      }
-
-      const data = await response.json();
-      const newPathWithBuster = `/media/${data.path}?t=${new Date().getTime()}`;
-
-      const updatedUser = {
-        ...user,
-        mentor: { ...user.mentor, profile_img: newPathWithBuster },
-      };
-
-      setUser(updatedUser);
-      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-
-      return { success: true, data };
-    } catch (error) {
-      console.error(error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const getSessionInfo = async (sessionCode) => {
-    try {
-      const response = await fetch(ENDPOINTS.GET_SESSION_INFO(sessionCode), {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      if (!response.ok) throw new Error("Error al obtener info sesión");
-      const data = await response.json();
-      return { success: true, data };
-    } catch (error) {
-      console.error(error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const inscribeLearner = async (sessionCode) => {
-    try {
-      if (!user?.user_code) throw new Error("No se encontró user_code");
-
-      const response = await fetch(ENDPOINTS.INSCRIBE_LEARNER, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          user_code: user.user_code,
-          uuid: sessionCode,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Error al inscribirse");
-      return { success: true, data };
-    } catch (error) {
-      console.error(error);
-      return { success: false, error: error.message };
-    }
-  };
-
   const value = {
     user,
     isAuthenticated,
@@ -464,18 +490,19 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     refreshToken,
-    updateLearnerProfile,
     checkAuth,
+    updateUser,
+    updateLearnerProfile,
     convertLearnerToMentor,
     updateMentorProfile,
+    uploadMentorImage,
     createSession,
     getSessions,
-    getCareers,
-    getCategories,
     updateSession,
-    uploadMentorImage,
     getSessionInfo,
     inscribeLearner,
+    getCareers,
+    getCategories,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
